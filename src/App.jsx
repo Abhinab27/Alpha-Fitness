@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import WorkoutPlanner from './pages/WorkoutPlanner';
-import DietTracker from './pages/DietTracker';
 import ActiveWorkout from './pages/ActiveWorkout';
+import FitCorner from './pages/FitCorner';
 import './index.css';
 
 export default function App() {
@@ -15,11 +15,11 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/planner" element={<WorkoutPlanner />} />
-                    <Route path="/diet" element={<DietTracker />} />
                     <Route path="/workout/:planId" element={<ActiveWorkout />} />
+                    <Route path="/fitcorner" element={<FitCorner />} />
                 </Routes>
                 <footer className="footer container text-center">
-                    <p>Copyright 2026 Alpha Fitness. This is a beginner project.</p>
+                    <p>Copyright 2026 Alpha Fitness. Built for Peak Performance.</p>
                 </footer>
             </div>
         </Router>

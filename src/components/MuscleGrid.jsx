@@ -1,12 +1,12 @@
 import React from 'react';
 
 const BODY_PARTS = [
-    { name: 'Arms', image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=600', color: '#00ff88' },
-    { name: 'Legs', image: 'https://images.unsplash.com/photo-1434608519344-49d77a699e1d?auto=format&fit=crop&q=80&w=600', color: '#00ccff' },
-    { name: 'Back', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600', color: '#ff0055' },
-    { name: 'Chest', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=600', color: '#ffaa00' },
-    { name: 'Shoulders', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&q=80&w=600', color: '#9d00ff' },
-    { name: 'Abs', image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=600', color: '#ff00aa' }
+    { name: 'Arms', image: '/exercises/Arms.png', color: '#C97D60' },
+    { name: 'Legs', image: '/exercises/Legs.png', color: '#5E7B6C' },
+    { name: 'Back', image: '/exercises/Back.png', color: '#8F6C5B' },
+    { name: 'Chest', image: '/exercises/Barbell_Bench_Press.png', color: '#D0A38B' },
+    { name: 'Shoulders', image: '/exercises/Shoulder.png', color: '#7B8B7B' },
+    { name: 'Abs', image: '/exercises/Abs.png', color: '#A88B7B' }
 ];
 
 export default function MuscleGrid({ selectedPart, onSelectPart }) {

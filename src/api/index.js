@@ -1,4 +1,7 @@
-const CATEGORY_MAP = {
+import axios from 'axios';
+
+// Map UI Category names to ExerciseDB bodyPart names
+export const CATEGORY_MAP = {
     'Abs': 'waist',
     'Arms': 'upper arms',
     'Back': 'back',
@@ -7,108 +10,1166 @@ const CATEGORY_MAP = {
     'Shoulders': 'shoulders'
 };
 
+const sanitizeExercise = (item) => ({
+    id: item.id,
+    name: item.name ? item.name.charAt(0).toUpperCase() + item.name.slice(1) : '',
+    description: Array.isArray(item.instructions)
+        ? item.instructions.map(step => `<p>- ${step}</p>`).join('') 
+        : (item.description || '<p>No instructions available.</p>'),
+    muscles: item.target ? item.target.charAt(0).toUpperCase() + item.target.slice(1) : (item.muscles || 'Various'),
+    equipment: item.equipment ? item.equipment.charAt(0).toUpperCase() + item.equipment.slice(1) : (item.equipment || 'Bodyweight'),
+    image: item.image || item.gifUrl || 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=800',
+    bodyPart: item.bodyPart ? item.bodyPart.charAt(0).toUpperCase() + item.bodyPart.slice(1) : (item.bodyPart || ''),
+    target: item.target ? item.target.charAt(0).toUpperCase() + item.target.slice(1) : (item.target || '')
+});
+
+
 const CACHE = {};
 
-export const fetchExercises = async (bodyPart) => {
-    const categoryId = CATEGORY_MAP[bodyPart];
-    if (!categoryId) return [];
 
-    if (CACHE[bodyPart]) {
-        return CACHE[bodyPart];
-    }
 
+export const listBodyParts = async () => {
     try {
-        const apiKey = import.meta.env.VITE_RAPIDAPI_KEY; // Requires .env file support
-        const url = `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${categoryId}?limit=12`;
-        
-        const options = {
-            method: 'GET',
-            headers: {
-                'x-rapidapi-key': apiKey || '',
-                'x-rapidapi-host': 'exercisedb.p.rapidapi.com'
-            }
-        };
-
-        const response = await fetch(url, options);
-
-        if (!response.ok) {
-            throw new Error(`RapidAPI error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-
-        // Process and sanitize the response for ExerciseDB format
-        const results = data.map((item) => ({
-            id: item.id,
-            name: item.name.charAt(0).toUpperCase() + item.name.slice(1),
-            description: item.instructions 
-                ? item.instructions.map(step => `<p>- ${step}</p>`).join('') 
-                : '<p>No instructions available.</p>',
-            muscles: item.target.charAt(0).toUpperCase() + item.target.slice(1),
-            equipment: item.equipment.charAt(0).toUpperCase() + item.equipment.slice(1),
-            image: item.gifUrl, // ExerciseDB provides gif URLs
-            bodyPart: item.bodyPart.charAt(0).toUpperCase() + item.bodyPart.slice(1),
-            target: item.target.charAt(0).toUpperCase() + item.target.slice(1)
-        }));
-
-        CACHE[bodyPart] = results;
-        return results;
+        const response = await axios.get('/api/exercises/bodyPartList');
+        return response.data;
     } catch (error) {
-        console.error("Failed to fetch exercises from RapidAPI - falling back to mock data", error);
-        return getFallbackData(bodyPart);
+        console.warn("API listBodyParts failed, using local offline fallback list", error.message);
+        return Object.values(CATEGORY_MAP);
     }
 };
 
-function getFallbackData(bodyPart) {
-    return [
-        {
-            id: `${bodyPart}-1`,
-            name: `${bodyPart} Hypertrophy Set`,
-            description: `
-                <p><strong>Instructions:</strong></p>
-                <ol style="margin-left: 20px;">
-                    <li>Set up the equipment appropriately for your height.</li>
-                    <li>Engage your core and firmly plant your feet.</li>
-                    <li>Initiate the movement focusing entirely on your ${bodyPart.toLowerCase()}.</li>
-                    <li>Squeeze at the peak of contraction for one second.</li>
-                    <li>Slowly lower the weight back to the starting position over 3 seconds.</li>
-                </ol>
-            `,
-            muscles: bodyPart,
-            equipment: 'Dumbbells, Barbell',
-            image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-            id: `${bodyPart}-2`,
-            name: `Explosive ${bodyPart} Movement`,
-            description: `
-                <p><strong>Instructions:</strong></p>
-                <ol style="margin-left: 20px;">
-                    <li>Begin in an athletic stance.</li>
-                    <li>Explosively drive the power through your ${bodyPart.toLowerCase()}.</li>
-                    <li>Maintain a neutral spine and tight core throughout the movement.</li>
-                    <li>Reset your starting position before beginning the next repetition.</li>
-                </ol>
-            `,
-            muscles: bodyPart,
-            equipment: 'Bodyweight',
-            image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-            id: `${bodyPart}-3`,
-            name: `Isolating ${bodyPart} Curl/Press`,
-            description: `
-                <p><strong>Instructions:</strong></p>
-                <ol style="margin-left: 20px;">
-                    <li>Position yourself on the machine and select a moderate weight.</li>
-                    <li>Perform the concentric phase forcefully.</li>
-                    <li>Hold the maximum tension point briefly.</li>
-                    <li>Control the eccentric release to maximize time-under-tension.</li>
-                </ol>
-            `,
-            muscles: bodyPart,
-            equipment: 'Cable Machine',
-            image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=800'
-        }
-    ];
-}
+export const listExercises = async (limit = 10, offset = 0) => {
+    try {
+        const response = await axios.get('/api/exercises', { params: { limit, offset } });
+        return response.data.map(sanitizeExercise);
+    } catch (error) {
+        console.warn("API listExercises failed, using local offline fallback", error.message);
+        return fallbackDB.slice(offset, offset + limit).map(sanitizeExercise);
+    }
+};
+
+export const listExercisesByTarget = async (target, limit = 10, offset = 0) => {
+    const cleanTarget = target.toLowerCase();
+    try {
+        const response = await axios.get(`/api/exercises/target/${cleanTarget}`, { params: { limit, offset } });
+        return response.data.map(sanitizeExercise);
+    } catch (error) {
+        console.warn(`API listExercisesByTarget (${target}) failed, using local offline fallback`, error.message);
+        const filtered = fallbackDB.filter(ex => 
+            ex.target.toLowerCase() === cleanTarget || 
+            ex.muscles.toLowerCase() === cleanTarget
+        );
+        return filtered.slice(offset, offset + limit).map(sanitizeExercise);
+    }
+};
+
+export const searchExercisesByName = async (name, limit = 10, offset = 0) => {
+    if (!name.trim()) return [];
+    const cleanName = name.toLowerCase();
+    try {
+        const response = await axios.get(`/api/exercises/name/${cleanName}`, { params: { limit, offset } });
+        return response.data.map(sanitizeExercise);
+    } catch (error) {
+        console.warn(`API searchExercisesByName (${name}) failed, using local offline fallback`, error.message);
+        const filtered = fallbackDB.filter(ex => 
+            ex.name.toLowerCase().includes(cleanName) || 
+            ex.bodyPart.toLowerCase().includes(cleanName) || 
+            ex.target.toLowerCase().includes(cleanName)
+        );
+        return filtered.slice(offset, offset + limit).map(sanitizeExercise);
+    }
+};
+
+export const listExercisesByEquipment = async (equipment, limit = 10, offset = 0) => {
+    const cleanEquip = equipment.toLowerCase();
+    try {
+        const response = await axios.get(`/api/exercises/equipment/${cleanEquip}`, { params: { limit, offset } });
+        return response.data.map(sanitizeExercise);
+    } catch (error) {
+        console.warn(`API listExercisesByEquipment (${equipment}) failed, using local offline fallback`, error.message);
+        const filtered = fallbackDB.filter(ex => ex.equipment.toLowerCase() === cleanEquip);
+        return filtered.slice(offset, offset + limit).map(sanitizeExercise);
+    }
+};
+
+export const getExerciseById = async (id) => {
+    try {
+        const response = await axios.get(`/api/exercises/exercise/${id}`);
+        return sanitizeExercise(response.data);
+    } catch (error) {
+        console.warn(`API getExerciseById (${id}) failed, using local offline fallback`, error.message);
+        const found = fallbackDB.find(ex => ex.id === id);
+        return found ? sanitizeExercise(found) : null;
+    }
+};
+
+export const listTargets = async () => {
+    try {
+        const response = await axios.get('/api/exercises/targetList');
+        return response.data;
+    } catch (error) {
+        console.warn("API listTargets failed, using local offline fallback list", error.message);
+        const targets = new Set(fallbackDB.map(ex => ex.target.toLowerCase()));
+        return Array.from(targets);
+    }
+};
+
+export const fetchExercises = async (bodyPart, limit = 12, offset = 0) => {
+    const categoryId = CATEGORY_MAP[bodyPart] || bodyPart.toLowerCase();
+    const cacheKey = `${bodyPart}-${limit}-${offset}`;
+    if (CACHE[cacheKey]) {
+        return CACHE[cacheKey];
+    }
+    try {
+        const response = await axios.get(`/api/exercises/bodyPart/${categoryId}`, { params: { limit, offset } });
+        const results = response.data.map(sanitizeExercise);
+        CACHE[cacheKey] = results;
+        return results;
+    } catch (error) {
+        console.warn(`Failed to fetch exercises for '${bodyPart}' from API - falling back to local offline database`, error.message);
+        const filtered = fallbackDB.filter(ex => ex.bodyPart.toLowerCase() === categoryId);
+        const results = filtered.length > 0 ? filtered.map(sanitizeExercise) : fallbackDB.slice(0, limit).map(sanitizeExercise);
+        CACHE[cacheKey] = results;
+        return results;
+    }
+};
+
+export const listExercisesByBodyPart = fetchExercises;
+
+export const listEquipment = async () => {
+    try {
+        const response = await axios.get('/api/exercises/equipmentList');
+        return response.data;
+    } catch (error) {
+        console.warn("API listEquipment failed, using local offline fallback list", error.message);
+        const equipments = new Set(fallbackDB.map(ex => ex.equipment.toLowerCase()));
+        return Array.from(equipments);
+    }
+};
+
+
+/* =========================================================================
+   Highly Comprehensive Local Offline Backup Database (72 Exercises)
+   ========================================================================= */
+const fallbackDB = [
+  // === ABS / WAIST ===
+  {
+    "id": "abs-01",
+    "name": "Abdominal Crunch",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Abdominal_Crunch.png",
+    "instructions": [
+      "Lie flat on your back with your knees bent and feet flat on the floor, hip-width apart.",
+      "Place your hands lightly behind your head or cross them over your chest.",
+      "Contract your abdominals, exhale, and slowly lift your shoulders off the floor.",
+      "Squeeze at the top of the contraction for 1 second, then slowly lower back down."
+    ]
+  },
+  {
+    "id": "abs-02",
+    "name": "Hanging Leg Raise",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Hanging_Leg_Raise.png",
+    "instructions": [
+      "Hang from a pull-up bar with a shoulder-width grip, keeping your arms fully extended.",
+      "Keep your legs straight and engage your core to prevent swinging.",
+      "Slowly raise your legs up until they are parallel to the floor (90-degree angle).",
+      "Hold the peak contraction briefly, then slowly lower your legs back to the starting position."
+    ]
+  },
+  {
+    "id": "abs-03",
+    "name": "Russian Twist",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "dumbbell",
+    "image": "/exercises/Russian_Twist.png",
+    "instructions": [
+      "Sit on the floor with knees bent and feet slightly elevated, creating a V-shape with your torso.",
+      "Hold a dumbbell with both hands near your chest.",
+      "Twist your torso to the right, tapping the weight on the floor beside you.",
+      "Twist back to the left and tap the weight on the left side."
+    ]
+  },
+  {
+    "id": "abs-04",
+    "name": "Plank",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Plank.png",
+    "instructions": [
+      "Place elbows directly under shoulders, resting forearms on the ground.",
+      "Extend legs straight behind you, toes tucked under, supporting body in a straight line.",
+      "Engage your abdominals, glutes, and thighs. Do not let your hips sag.",
+      "Hold this position while breathing smoothly."
+    ]
+  },
+  {
+    "id": "abs-05",
+    "name": "Bicycle Crunch",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Bicycle_Crunch.png",
+    "instructions": [
+      "Lie flat on the floor with lower back pressed to the ground, hands behind your head.",
+      "Bring knees up and lift shoulder blades off the floor.",
+      "Straighten your right leg out while turning your upper body to the left, bringing right elbow toward left knee.",
+      "Switch sides, bringing left elbow toward right knee in a pedaling motion."
+    ]
+  },
+  {
+    "id": "abs-06",
+    "name": "Cable Woodchopper",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "cable",
+    "image": "/exercises/Cable_Woodchopper.png",
+    "instructions": [
+      "Set a cable pulley at high position. Stand sideways to the cable tower, grasping handle with both hands.",
+      "With arms extended, pull the cable down and across your body in a diagonal chopping motion.",
+      "Rotate your torso and pivot your back foot as you complete the pull.",
+      "Slowly return to start position under control."
+    ]
+  },
+  {
+    "id": "abs-07",
+    "name": "Reverse Crunch",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Reverse_Crunch.png",
+    "instructions": [
+      "Lie flat on your back with hands at your sides, knees bent at 90 degrees.",
+      "Contract your lower abs and pull your knees toward your chest, lifting your hips off the floor.",
+      "Squeeze at the top, then slowly lower your hips back to the starting position."
+    ]
+  },
+  {
+    "id": "abs-08",
+    "name": "Plank Hip Dips",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Plank_Hip_Dips.png",
+    "instructions": [
+      "Start in a standard forearm plank position.",
+      "Slowly rotate your hips to the right, dipping them close to the floor without touching.",
+      "Return to center, then rotate to the left and dip your hips."
+    ]
+  },
+  {
+    "id": "abs-09",
+    "name": "Ab Wheel Rollout",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Ab_Wheel_Rollout.png",
+    "instructions": [
+      "Kneel on the floor with an ab wheel in front of you.",
+      "Roll the wheel straight forward, extending your body as far as you can without letting your hips sag.",
+      "Engage your core to pull yourself back to the starting knee position."
+    ]
+  },
+  {
+    "id": "abs-10",
+    "name": "Leg Pull-in",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Leg_Pull-in.png",
+    "instructions": [
+      "Sit on flat bench or floor, leaning slightly back, hands gripping edges or flat on floor.",
+      "Extend legs straight out, feet off floor.",
+      "Pull knees toward your chest while leaning slightly forward, contracting your abs.",
+      "Extend legs back out to complete one rep."
+    ]
+  },
+  {
+    "id": "abs-11",
+    "name": "Flutter Kicks",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Flutter_Kicks.png",
+    "instructions": [
+      "Lie flat on your back, hands tucked under your hips for support.",
+      "Lift legs 6 inches off the floor.",
+      "Kick legs rapidly up and down in a small scissor-like motion, keeping knees straight."
+    ]
+  },
+  {
+    "id": "abs-12",
+    "name": "V-Up",
+    "bodyPart": "waist",
+    "target": "abs",
+    "muscles": "Abs",
+    "equipment": "bodyweight",
+    "image": "/exercises/V-Up.png",
+    "instructions": [
+      "Lie flat on back, arms extended overhead.",
+      "Simultaneously lift your legs and torso, folding at the hips to touch toes with hands.",
+      "Lower back down slowly under complete control."
+    ]
+  },
+  {
+    "id": "arms-01",
+    "name": "Dumbbell Bicep Curl",
+    "bodyPart": "upper arms",
+    "target": "biceps",
+    "muscles": "Biceps",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbell_Bicep_Curl.png",
+    "instructions": [
+      "Stand upright holding dumbbells at sides, arms extended, palms facing forward.",
+      "Keep elbows locked close to your sides throughout the lift.",
+      "Curl weights up until they are at shoulder height.",
+      "Squeeze biceps, then slowly lower dumbbells back to start."
+    ]
+  },
+  {
+    "id": "arms-02",
+    "name": "Tricep Overhead Extension",
+    "bodyPart": "upper arms",
+    "target": "triceps",
+    "muscles": "Triceps",
+    "equipment": "dumbbell",
+    "image": "/exercises/Tricep_Overhead_Extension.png",
+    "instructions": [
+      "Stand with feet shoulder-width apart, holding a single dumbbell overhead with both hands.",
+      "Keep upper arms vertical and elbows pointing forward.",
+      "Lower weight behind head by bending elbows, feeling stretch in triceps.",
+      "Press weight back up to start by extending arms."
+    ]
+  },
+  {
+    "id": "arms-03",
+    "name": "Hammer Curl",
+    "bodyPart": "upper arms",
+    "target": "biceps",
+    "muscles": "Biceps",
+    "equipment": "dumbbell",
+    "image": "/exercises/Hammer_Curl.png",
+    "instructions": [
+      "Stand tall holding dumbbells at sides, palms facing each other (neutral grip).",
+      "Curl dumbbells upward while keeping palms facing each other.",
+      "Squeeze biceps and forearm muscles at top, then lower slowly."
+    ]
+  },
+  {
+    "id": "arms-04",
+    "name": "Barbell Bicep Curl",
+    "bodyPart": "upper arms",
+    "target": "biceps",
+    "muscles": "Biceps",
+    "equipment": "barbell",
+    "image": "/exercises/Barbell_Bicep_Curl.png",
+    "instructions": [
+      "Stand tall holding a barbell with underhand grip (palms facing forward).",
+      "Curl barbell up while keeping elbows tucked close to your rib cage.",
+      "Contract your biceps at the top, then slowly release the barbell back down."
+    ]
+  },
+  {
+    "id": "arms-05",
+    "name": "Concentration Curl",
+    "bodyPart": "upper arms",
+    "target": "biceps",
+    "muscles": "Biceps",
+    "equipment": "dumbbell",
+    "image": "/exercises/Concentration_Curl.png",
+    "instructions": [
+      "Sit on a bench, leaning forward. Rest the elbow of the curling arm against inside of thigh.",
+      "Let the dumbbell hang down fully extended.",
+      "Curl the dumbbell upward, focusing entirely on bicep contraction.",
+      "Slowly lower it back to fully extended start."
+    ]
+  },
+  {
+    "id": "arms-06",
+    "name": "Cable Tricep Pushdown",
+    "bodyPart": "upper arms",
+    "target": "triceps",
+    "muscles": "Triceps",
+    "equipment": "cable",
+    "image": "/exercises/Cable_Tricep_Pushdown.png",
+    "instructions": [
+      "Stand facing a cable pulley at high position with rope or bar attached.",
+      "Grip attachment and lock your elbows close to your torso.",
+      "Push attachment down toward floor, fully extending your arms and squeezing triceps.",
+      "Slowly return to starting position, maintaining elbow locks."
+    ]
+  },
+  {
+    "id": "arms-07",
+    "name": "Bench Dips",
+    "bodyPart": "upper arms",
+    "target": "triceps",
+    "muscles": "Triceps",
+    "equipment": "bodyweight",
+    "image": "/exercises/Bench_Dips.png",
+    "instructions": [
+      "Sit on edge of bench, hands gripping edge next to hips.",
+      "Extend legs out in front. Lower hips off bench.",
+      "Bend elbows to lower your hips towards floor until elbows are at 90 degrees.",
+      "Push through palms to extend arms back up."
+    ]
+  },
+  {
+    "id": "arms-08",
+    "name": "Preacher Curl",
+    "bodyPart": "upper arms",
+    "target": "biceps",
+    "muscles": "Biceps",
+    "equipment": "barbell",
+    "image": "/exercises/Preacher_Curl.png",
+    "instructions": [
+      "Sit at preacher curl bench and rest upper arms flat against pad, holding barbell.",
+      "Curl barbell up toward shoulders.",
+      "Squeeze biceps at the top, then slowly lower until arms are fully straight."
+    ]
+  },
+  {
+    "id": "arms-09",
+    "name": "Skull Crusher",
+    "bodyPart": "upper arms",
+    "target": "triceps",
+    "muscles": "Triceps",
+    "equipment": "barbell",
+    "image": "/exercises/Skull_Crusher.png",
+    "instructions": [
+      "Lie flat on bench, holding an EZ bar or barbell directly over chest.",
+      "Hinge only at your elbows, lowering the bar toward your forehead.",
+      "Press the bar back up to starting position by locking out triceps."
+    ]
+  },
+  {
+    "id": "arms-10",
+    "name": "Tricep Kickback",
+    "bodyPart": "upper arms",
+    "target": "triceps",
+    "muscles": "Triceps",
+    "equipment": "dumbbell",
+    "image": "/exercises/Tricep_Kickback.png",
+    "instructions": [
+      "Stand holding dumbbell. Bend at hips, keeping back flat. Lock elbow to torso.",
+      "Extend dumbbell back until arm is straight, squeezing triceps.",
+      "Slowly return to bent start position."
+    ]
+  },
+  {
+    "id": "arms-11",
+    "name": "Spider Curl",
+    "bodyPart": "upper arms",
+    "target": "biceps",
+    "muscles": "Biceps",
+    "equipment": "barbell",
+    "image": "/exercises/Spider_Curl.png",
+    "instructions": [
+      "Lie chest-down on an incline bench, holding barbell with arms hanging straight down.",
+      "Curl the barbell upward, keeping elbows stationary.",
+      "Hold peak contraction for a second, then slowly release."
+    ]
+  },
+  {
+    "id": "arms-12",
+    "name": "Diamond Push-up",
+    "bodyPart": "upper arms",
+    "target": "triceps",
+    "muscles": "Triceps",
+    "equipment": "bodyweight",
+    "image": "/exercises/Diamond_Push-up.png",
+    "instructions": [
+      "Assume push-up position, but place index fingers and thumbs together to form a diamond shape.",
+      "Lower chest down to hands, keeping elbows close to body.",
+      "Push back up to starting position, contracting triceps."
+    ]
+  },
+  {
+    "id": "back-01",
+    "name": "Barbell Row",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "barbell",
+    "image": "/exercises/Barbell_Row.png",
+    "instructions": [
+      "Hold barbell with overhand grip. Bend knees slightly.",
+      "Hinge forward at hips, back straight, nearly parallel to floor.",
+      "Pull barbell toward lower rib cage, keeping elbows close to body.",
+      "Squeeze shoulder blades, then slowly lower."
+    ]
+  },
+  {
+    "id": "back-02",
+    "name": "Lat Pulldown",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "cable",
+    "image": "/exercises/Lat_Pulldown.png",
+    "instructions": [
+      "Sit at lat machine. Grasp bar with wide overhand grip.",
+      "Pull shoulder blades down and back, then pull bar to upper chest.",
+      "Squeeze lats at bottom, then slowly return."
+    ]
+  },
+  {
+    "id": "back-03",
+    "name": "Pull-Up",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "bodyweight",
+    "image": "/exercises/Pull-Up.png",
+    "instructions": [
+      "Grip pull-up bar with hands wider than shoulders.",
+      "Pull body up by driving elbows down until chin clears bar.",
+      "Squeeze, then slowly lower back to full hang."
+    ]
+  },
+  {
+    "id": "back-04",
+    "name": "Dumbbell Single-Arm Row",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbbell_Single-Arm_Row.png",
+    "instructions": [
+      "Place one knee and hand on flat bench. Torso parallel to floor.",
+      "Hold dumbbell in opposite hand, arm extended.",
+      "Pull dumbbell upward toward hip, keeping elbow close to side.",
+      "Hold briefly at top, then lower under control."
+    ]
+  },
+  {
+    "id": "back-05",
+    "name": "Back Hyperextension",
+    "bodyPart": "back",
+    "target": "spine",
+    "muscles": "Back",
+    "equipment": "bodyweight",
+    "image": "/exercises/Back_Hyperextension.png",
+    "instructions": [
+      "Position hips on hyperextension bench pad, calves secured under rollers.",
+      "Cross arms over chest, keep spine neutral and bend forward at hips.",
+      "Raise torso up until body is in a straight line, squeezing lower back.",
+      "Do not hyperextend/over-arch the spine at the top."
+    ]
+  },
+  {
+    "id": "back-06",
+    "name": "Straight-Arm Cable Pulldown",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "cable",
+    "image": "/exercises/Straight-Arm_Cable_Pulldown.png",
+    "instructions": [
+      "Stand facing cable tower with straight bar attached at top.",
+      "Grasp bar with shoulder-width overhand grip, step back. Leaning slightly forward.",
+      "Keep arms straight, sweep the bar down toward thighs in wide arc.",
+      "Squeeze lats at bottom, then return slowly."
+    ]
+  },
+  {
+    "id": "back-07",
+    "name": "Seated Cable Row",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "cable",
+    "image": "/exercises/Seated_Cable_Row.png",
+    "instructions": [
+      "Sit at row machine, feet braced. Grasp cable attachment.",
+      "Sit tall with neutral spine. Pull cable attachment toward lower abdomen.",
+      "Squeeze shoulder blades together, then return slowly."
+    ]
+  },
+  {
+    "id": "back-08",
+    "name": "Deadlift",
+    "bodyPart": "back",
+    "target": "spine",
+    "muscles": "Back",
+    "equipment": "barbell",
+    "image": "/exercises/Deadlift.png",
+    "instructions": [
+      "Stand with feet mid-foot under barbell. Hinge down and grip bar.",
+      "Flatten back, pull shoulders down. Push floor away with legs to lift bar.",
+      "Lock hips at top, then lower bar to ground under control."
+    ]
+  },
+  {
+    "id": "back-09",
+    "name": "Dumbbell Pullover",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbbell_Pullover.png",
+    "instructions": [
+      "Lie perpendicular on flat bench, upper back supported, holding dumbbell over chest.",
+      "Slowly lower dumbbell back behind head, keeping arms nearly straight.",
+      "Feel stretch in lats, then pull dumbbell back to start."
+    ]
+  },
+  {
+    "id": "back-10",
+    "name": "Inverted Row",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "bodyweight",
+    "image": "/exercises/Inverted_Row.png",
+    "instructions": [
+      "Set bar at waist height in rack. Lie chest-under bar.",
+      "Grasp bar with wide overhand grip. Pull chest up to bar in straight line.",
+      "Squeeze back, then lower slowly."
+    ]
+  },
+  {
+    "id": "back-11",
+    "name": "Renegade Row",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "dumbbell",
+    "image": "/exercises/Renegade_Row.png",
+    "instructions": [
+      "Start in high push-up position, hands resting on dumbbells.",
+      "Perform one push-up.",
+      "Row right dumbbell toward hip, keeping hips square. Repeat on left."
+    ]
+  },
+  {
+    "id": "back-12",
+    "name": "T-Bar Row",
+    "bodyPart": "back",
+    "target": "lats",
+    "muscles": "Back",
+    "equipment": "barbell",
+    "image": "/exercises/T-Bar_Row.png",
+    "instructions": [
+      "Position barbell in landmine anchor. Stand straddling bar.",
+      "Hinge forward, grab handle. Pull weight towards chest.",
+      "Squeeze lats, then lower barbell back down."
+    ]
+  },
+  {
+    "id": "chest-01",
+    "name": "Barbell Bench Press",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "barbell",
+    "image": "/exercises/Barbell_Bench_Press.png",
+    "instructions": [
+      "Lie flat on bench, feet planted. Grip bar slightly wider than shoulders.",
+      "Unrack bar, lower it slowly to mid-chest.",
+      "Drive bar straight back up to full arm extension, squeezing chest."
+    ]
+  },
+  {
+    "id": "chest-02",
+    "name": "Dumbbell Fly",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbbell_Fly.png",
+    "instructions": [
+      "Lie flat on bench, dumbbells over chest, palms facing each other.",
+      "With slight elbow bend, lower arms in wide arc until stretch in chest.",
+      "Reverse movement to sweep dumbbells back to top."
+    ]
+  },
+  {
+    "id": "chest-03",
+    "name": "Push-Up",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "bodyweight",
+    "image": "/exercises/Push-Up.png",
+    "instructions": [
+      "Start in high plank position. Lower body by bending elbows.",
+      "Keep core tight and body straight. Push back to top start."
+    ]
+  },
+  {
+    "id": "chest-04",
+    "name": "Incline Dumbbell Press",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "dumbbell",
+    "image": "/exercises/Incline_Dumbell_Press.png",
+    "instructions": [
+      "Lie on 30-45 degree incline bench, holding dumbbells at chest level.",
+      "Press dumbbells vertically over chest until arms are straight.",
+      "Slowly lower dumbbells back to chest."
+    ]
+  },
+  {
+    "id": "chest-05",
+    "name": "Decline Bench Press",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "barbell",
+    "image": "/exercises/Decline_Bench_Press.png",
+    "instructions": [
+      "Secure feet under pads of decline bench, lie back. Grip barbell.",
+      "Lower barbell to lower chest under control.",
+      "Press bar straight up to lockout."
+    ]
+  },
+  {
+    "id": "chest-06",
+    "name": "Cable Crossover",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "cable",
+    "image": "/exercises/Cable_Crossover.png",
+    "instructions": [
+      "Set pulleys at high position, hold handles, stand centered and step forward.",
+      "Pull handles down and together in wide sweeping motion in front of hips.",
+      "Squeeze chest at peak contraction, then release slowly."
+    ]
+  },
+  {
+    "id": "chest-07",
+    "name": "Chest Dip",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "bodyweight",
+    "image": "/exercises/Chest_Dips.png",
+    "instructions": [
+      "Grip dip bars, lift body. Lean torso slightly forward, flare elbows out.",
+      "Lower body by bending elbows until upper arms are parallel to floor.",
+      "Push back up to starting lockout."
+    ]
+  },
+  {
+    "id": "chest-08",
+    "name": "Dumbbell Bench Press",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbbell_Bench_Press.png",
+    "instructions": [
+      "Lie on flat bench holding dumbbells at chest level.",
+      "Press dumbbells straight up over chest until elbows lock.",
+      "Lower dumbbells back slowly to chest."
+    ]
+  },
+  {
+    "id": "chest-09",
+    "name": "Incline Barbell Bench Press",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "barbell",
+    "image": "/exercises/Incline_Barbell_Bench_Press.png",
+    "instructions": [
+      "Lie on incline bench, grip barbell slightly wider than shoulders.",
+      "Unrack and lower barbell to upper chest.",
+      "Press bar straight up."
+    ]
+  },
+  {
+    "id": "chest-10",
+    "name": "Pec Deck Fly",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "machine",
+    "image": "/exercises/Pec_Deck_Fly.png",
+    "instructions": [
+      "Sit at machine, rest forearms on pads or hold handles.",
+      "Contract chest to pull handles/pads together in center.",
+      "Squeeze, then return slowly."
+    ]
+  },
+  {
+    "id": "chest-11",
+    "name": "Incline Dumbbell Fly",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "dumbbell",
+    "image": "/exercises/Incline_Dumbbell_Fly.png",
+    "instructions": [
+      "Lie on incline bench holding dumbbells over chest.",
+      "Lower dumbbells out to sides in wide arc, arms slightly bent.",
+      "Return dumbbells back to top."
+    ]
+  },
+  {
+    "id": "chest-12",
+    "name": "Decline Push-Up",
+    "bodyPart": "chest",
+    "target": "pectorals",
+    "muscles": "Chest",
+    "equipment": "bodyweight",
+    "image": "/exercises/Decline_Push-Up.png",
+    "instructions": [
+      "Assume push-up position, but rest feet on bench or elevated platform.",
+      "Lower chest toward floor, keeping core engaged.",
+      "Push back to starting high plank."
+    ]
+  },
+  {
+    "id": "legs-01",
+    "name": "Barbell Back Squat",
+    "bodyPart": "upper legs",
+    "target": "quads",
+    "muscles": "Legs",
+    "equipment": "barbell",
+    "image": "/exercises/Barbell_Back_Squat.png",
+    "instructions": [
+      "Rest barbell on traps. Stand feet shoulder-width.",
+      "Lower hips down and back as if sitting in deep chair.",
+      "Descend until parallel, then drive through heels back up."
+    ]
+  },
+  {
+    "id": "legs-02",
+    "name": "Dumbbell Lunge",
+    "bodyPart": "upper legs",
+    "target": "quads",
+    "muscles": "Legs",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbell_Lunge.png",
+    "instructions": [
+      "Stand tall, dumbbells at sides. Take large step forward.",
+      "Lower hips until back knee is just above floor, front knee at 90 degrees.",
+      "Push off front heel to return to start."
+    ]
+  },
+  {
+    "id": "legs-03",
+    "name": "Romanian Deadlift",
+    "bodyPart": "upper legs",
+    "target": "hamstrings",
+    "muscles": "Legs",
+    "equipment": "barbell",
+    "image": "/exercises/Romanian_Deadlift.png",
+    "instructions": [
+      "Stand holding barbell in front of thighs. Hinge at hips.",
+      "Push glutes back, sliding bar down shins.",
+      "Lower until stretch in hamstrings, pull back up."
+    ]
+  },
+  {
+    "id": "legs-04",
+    "name": "Leg Press",
+    "bodyPart": "upper legs",
+    "target": "quads",
+    "muscles": "Legs",
+    "equipment": "machine",
+    "image": "/exercises/Leg_Press.png",
+    "instructions": [
+      "Sit in leg press machine, place feet platform.",
+      "Lower platform toward chest under control.",
+      "Push platform back up by extending legs, keeping knees slightly bent at top."
+    ]
+  },
+  {
+    "id": "legs-05",
+    "name": "Leg Extension",
+    "bodyPart": "upper legs",
+    "target": "quads",
+    "muscles": "Legs",
+    "equipment": "machine",
+    "image": "/exercises/Leg_Extension.png",
+    "instructions": [
+      "Sit on extension bench, place feet under roller pads.",
+      "Extend legs upward until legs are straight, squeezing quads.",
+      "Slowly lower back to starting bent position."
+    ]
+  },
+  {
+    "id": "legs-06",
+    "name": "Lying Leg Curl",
+    "bodyPart": "upper legs",
+    "target": "hamstrings",
+    "muscles": "Legs",
+    "equipment": "machine",
+    "image": "/exercises/Lying_Leg_Curl.png",
+    "instructions": [
+      "Lie chest-down on leg curl bench, place pads behind ankles.",
+      "Curl legs upward, pulling heels toward glutes.",
+      "Contract hamstrings at peak, slowly lower back down."
+    ]
+  },
+  {
+    "id": "legs-07",
+    "name": "Goblet Squat",
+    "bodyPart": "upper legs",
+    "target": "quads",
+    "muscles": "Legs",
+    "equipment": "dumbbell",
+    "image": "/exercises/Goblet_Squat.png",
+    "instructions": [
+      "Hold a dumbbell vertically by one end close to your chest.",
+      "Perform squat by lowering hips down and back.",
+      "Drive through heels back to upright stand."
+    ]
+  },
+  {
+    "id": "legs-08",
+    "name": "Bulgarian Split Squat",
+    "bodyPart": "upper legs",
+    "target": "quads",
+    "muscles": "Legs",
+    "equipment": "dumbbell",
+    "image": "/exercises/Bulgarian_Split_Squat.png",
+    "instructions": [
+      "Stand in front of bench. Place top of one foot flat on bench behind you.",
+      "Lower hips until back knee is near floor and front thigh is parallel.",
+      "Drive front foot into ground to return upright."
+    ]
+  },
+  {
+    "id": "legs-09",
+    "name": "Standing Calf Raise",
+    "bodyPart": "upper legs",
+    "target": "calves",
+    "muscles": "Legs",
+    "equipment": "bodyweight",
+    "image": "/exercises/Standing_Calf_Raise.png",
+    "instructions": [
+      "Stand tall, toes on raised block, heels hanging off edge.",
+      "Rise up onto toes as high as possible, squeezing calves.",
+      "Lower heels slowly below block level."
+    ]
+  },
+  {
+    "id": "legs-10",
+    "name": "Hip Thrust",
+    "bodyPart": "upper legs",
+    "target": "glutes",
+    "muscles": "Legs",
+    "equipment": "barbell",
+    "image": "/exercises/Hip_Thrust.png",
+    "instructions": [
+      "Sit in front of bench, upper back resting against edge. Rest barbell across hips.",
+      "Drive hips vertically up by squeezing glutes.",
+      "Lower hips back down."
+    ]
+  },
+  {
+    "id": "legs-11",
+    "name": "Sumo Deadlift",
+    "bodyPart": "upper legs",
+    "target": "glutes",
+    "muscles": "Legs",
+    "equipment": "barbell",
+    "image": "/exercises/Sumo_Deadlift.png",
+    "instructions": [
+      "Stand feet wide, toes pointed out. Grab barbell inside knees.",
+      "Flat back, raise torso by extending knees and hips.",
+      "Lockout at top, lower under control."
+    ]
+  },
+  {
+    "id": "legs-12",
+    "name": "Dumbbell Step-Up",
+    "bodyPart": "upper legs",
+    "target": "quads",
+    "muscles": "Legs",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbbell_Step-Up.png",
+    "instructions": [
+      "Stand in front of bench holding dumbbells in hands.",
+      "Place right foot on bench, push through right heel to step up.",
+      "Step down slowly with left foot."
+    ]
+  },
+  {
+    "id": "shoulders-01",
+    "name": "Overhead Dumbbell Press",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "dumbbell",
+    "image": "/exercises/Overhead_Dumbbell_Press.png",
+    "instructions": [
+      "Hold dumbbells at shoulders, palms forward.",
+      "Press weights straight overhead to lockout.",
+      "Slowly lower back to shoulders."
+    ]
+  },
+  {
+    "id": "shoulders-02",
+    "name": "Lateral Raise",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "dumbbell",
+    "image": "/exercises/Lateral_Raise.png",
+    "instructions": [
+      "Stand holding dumbbells. Raise arms out to sides in wide arc.",
+      "Stop at shoulder height, squeeze, then lower slowly."
+    ]
+  },
+  {
+    "id": "shoulders-03",
+    "name": "Face Pull",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "cable",
+    "image": "/exercises/Face_Pull.png",
+    "instructions": [
+      "Hold rope pulley at chest height. Pull rope toward nose.",
+      "Flare elbows out, squeeze rear delts, return slowly."
+    ]
+  },
+  {
+    "id": "shoulders-04",
+    "name": "Arnold Press",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "dumbbell",
+    "image": "/exercises/Arnold_Press.png",
+    "instructions": [
+      "Sit holding dumbbells in front of shoulders, palms facing you.",
+      "Press dumbbells overhead while rotating wrists so palms face forward at top.",
+      "Lower dumbbells while rotating palms back to starting chest position."
+    ]
+  },
+  {
+    "id": "shoulders-05",
+    "name": "Front Dumbbell Raise",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "dumbbell",
+    "image": "/exercises/Front_Dumbbell_Raise.png",
+    "instructions": [
+      "Stand tall holding dumbbells in front of thighs.",
+      "Raise dumbbells straight out in front to shoulder height, keeping elbows slightly bent.",
+      "Slowly lower back down to thighs."
+    ]
+  },
+  {
+    "id": "shoulders-06",
+    "name": "Upright Row",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "barbell",
+    "image": "/exercises/Upright_Row.png",
+    "instructions": [
+      "Stand holding barbell with close overhand grip.",
+      "Pull barbell straight up toward chin, flaring elbows high.",
+      "Slowly lower barbell back down."
+    ]
+  },
+  {
+    "id": "shoulders-07",
+    "name": "Dumbbell Shrug",
+    "bodyPart": "shoulders",
+    "target": "traps",
+    "muscles": "Shoulders",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbell_Shrug.png",
+    "instructions": [
+      "Stand tall, dumbbells in hands at sides.",
+      "Elevate shoulders straight up towards ears as high as possible.",
+      "Squeeze traps, then slowly release down."
+    ]
+  },
+  {
+    "id": "shoulders-08",
+    "name": "Dumbbell Reverse Fly",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "dumbbell",
+    "image": "/exercises/Dumbbell_Reverse_Fly.png",
+    "instructions": [
+      "Bend forward at hips, back flat. Dumbbells hanging down.",
+      "Raise weights out to sides, pinching shoulder blades and squeezing rear delts.",
+      "Slowly lower weights back down."
+    ]
+  },
+  {
+    "id": "shoulders-09",
+    "name": "Military Press",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "barbell",
+    "image": "/exercises/Military_Press.png",
+    "instructions": [
+      "Stand tall, rest barbell on front shoulders. Keep core braced.",
+      "Press barbell straight overhead to full arm lockout.",
+      "Slowly lower barbell back to front shoulders."
+    ]
+  },
+  {
+    "id": "shoulders-10",
+    "name": "Barbell Shrug",
+    "bodyPart": "shoulders",
+    "target": "traps",
+    "muscles": "Shoulders",
+    "equipment": "barbell",
+    "image": "/exercises/Barbell_Shrug.png",
+    "instructions": [
+      "Hold barbell in front of thighs. Elevate shoulders up toward ears.",
+      "Squeeze traps, release slowly."
+    ]
+  },
+  {
+    "id": "shoulders-11",
+    "name": "Behind-the-Neck Press",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "barbell",
+    "image": "/exercises/Behind-the-Neck_Press.png",
+    "instructions": [
+      "Sit tall, barbell resting across traps. Press barbell up to full lockout overhead.",
+      "Lower bar slowly back to traps."
+    ]
+  },
+  {
+    "id": "shoulders-12",
+    "name": "Cable Lateral Raise",
+    "bodyPart": "shoulders",
+    "target": "delts",
+    "muscles": "Shoulders",
+    "equipment": "cable",
+    "image": "/exercises/Cable_Lateral_Raise.png",
+    "instructions": [
+      "Stand sideways to low cable pulley. Grip handle with opposite hand.",
+      "Raise arm sideways in arc until parallel to floor.",
+      "Slowly lower back to start."
+    ]
+  }
+];

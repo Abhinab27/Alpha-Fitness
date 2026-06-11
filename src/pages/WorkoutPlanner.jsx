@@ -1,194 +1,265 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Calendar, Play, Trash2, Dumbbell, Clock } from 'lucide-react';
+import { Play, Dumbbell, ShieldCheck, Heart, Sparkles } from 'lucide-react';
 import '../index.css';
 
 export default function WorkoutPlanner() {
     const navigate = useNavigate();
-    const [plans, setPlans] = useState([]);
-    const [showNewPlanModal, setShowNewPlanModal] = useState(false);
-    const [newPlanName, setNewPlanName] = useState('');
 
-    useEffect(() => {
-        const storedPlans = localStorage.getItem('fitness_plans');
-        if (storedPlans) {
-            setPlans(JSON.parse(storedPlans));
-        } else {
-            // Seed a default plan if none exists
-            const defaultPlan = [
-                { id: 'default-1', name: 'My First Routine', exercises: [], color: '#FCC757' }
-            ];
-            setPlans(defaultPlan);
-            localStorage.setItem('fitness_plans', JSON.stringify(defaultPlan));
+    const weeklySchedule = [
+        {
+            day: 'Monday',
+            type: 'workout',
+            planId: 'seed-push',
+            name: 'Push Day (Chest / Shoulders / Triceps)',
+            color: '#C97D60',
+            description: 'Focused on upper body pushing movements to build the chest, deltoids, and triceps.',
+            exercises: [
+                { name: 'Barbell Bench Press', bodyPart: 'Chest', equipment: 'Barbell' },
+                { name: 'Incline Dumbbell Press', bodyPart: 'Chest', equipment: 'Dumbbell' },
+                { name: 'Dumbbell Fly', bodyPart: 'Chest', equipment: 'Dumbbell' },
+                { name: 'Chest Dip', bodyPart: 'Chest', equipment: 'Bodyweight' },
+                { name: 'Cable Crossover', bodyPart: 'Chest', equipment: 'Cable' },
+                { name: 'Push-Up', bodyPart: 'Chest', equipment: 'Bodyweight' },
+                { name: 'Overhead Dumbbell Press', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
+                { name: 'Arnold Press', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
+                { name: 'Lateral Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
+                { name: 'Front Dumbbell Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
+                { name: 'Tricep Overhead Extension', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
+                { name: 'Cable Tricep Pushdown', bodyPart: 'Upper arms', equipment: 'Cable' },
+                { name: 'Skull Crusher', bodyPart: 'Upper arms', equipment: 'Barbell' }
+            ]
+        },
+        {
+            day: 'Tuesday',
+            type: 'workout',
+            planId: 'seed-pull',
+            name: 'Pull Day (Back / Biceps)',
+            color: '#60a5fa',
+            description: 'Focused on upper body pulling patterns to construct back thickness, lat width, and arm strength.',
+            exercises: [
+                { name: 'Barbell Row', bodyPart: 'Back', equipment: 'Barbell' },
+                { name: 'Lat Pulldown', bodyPart: 'Back', equipment: 'Cable' },
+                { name: 'Pull-Up', bodyPart: 'Back', equipment: 'Bodyweight' },
+                { name: 'Dumbbell Single-Arm Row', bodyPart: 'Back', equipment: 'Dumbbell' },
+                { name: 'Seated Cable Row', bodyPart: 'Back', equipment: 'Cable' },
+                { name: 'Deadlift', bodyPart: 'Back', equipment: 'Barbell' },
+                { name: 'Straight-Arm Cable Pulldown', bodyPart: 'Back', equipment: 'Cable' },
+                { name: 'Dumbbell Pullover', bodyPart: 'Back', equipment: 'Dumbbell' },
+                { name: 'Face Pull', bodyPart: 'Shoulders', equipment: 'Cable' },
+                { name: 'Dumbbell Bicep Curl', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
+                { name: 'Hammer Curl', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
+                { name: 'Barbell Bicep Curl', bodyPart: 'Upper arms', equipment: 'Barbell' },
+                { name: 'Preacher Curl', bodyPart: 'Upper arms', equipment: 'Barbell' }
+            ]
+        },
+        {
+            day: 'Wednesday',
+            type: 'rest',
+            name: 'Active Rest & Recovery Day',
+            color: '#5E7B6C',
+            description: 'Let your nervous system recover. Focus on light walking, hydration, and organic mobility stretching.'
+        },
+        {
+            day: 'Thursday',
+            type: 'workout',
+            planId: 'seed-legs',
+            name: 'Leg Day (Quads / Hamstrings / Core)',
+            color: '#4ade80',
+            description: 'Intense lower body session targeting quads, hamstrings, glutes, calves, and a complete abs circuit.',
+            exercises: [
+                { name: 'Barbell Back Squat', bodyPart: 'Upper legs', equipment: 'Barbell' },
+                { name: 'Leg Press', bodyPart: 'Upper legs', equipment: 'Machine' },
+                { name: 'Dumbbell Lunge', bodyPart: 'Upper legs', equipment: 'Dumbbell' },
+                { name: 'Romanian Deadlift', bodyPart: 'Upper legs', equipment: 'Barbell' },
+                { name: 'Lying Leg Curl', bodyPart: 'Upper legs', equipment: 'Machine' },
+                { name: 'Bulgarian Split Squat', bodyPart: 'Upper legs', equipment: 'Dumbbell' },
+                { name: 'Hip Thrust', bodyPart: 'Upper legs', equipment: 'Barbell' },
+                { name: 'Standing Calf Raise', bodyPart: 'Upper legs', equipment: 'Bodyweight' },
+                { name: 'Abdominal Crunch', bodyPart: 'Waist', equipment: 'Bodyweight' },
+                { name: 'Hanging Leg Raise', bodyPart: 'Waist', equipment: 'Bodyweight' },
+                { name: 'Russian Twist', bodyPart: 'Waist', equipment: 'Dumbbell' },
+                { name: 'Plank', bodyPart: 'Waist', equipment: 'Bodyweight' },
+                { name: 'Bicycle Crunch', bodyPart: 'Waist', equipment: 'Bodyweight' }
+            ]
+        },
+        {
+            day: 'Friday',
+            type: 'workout',
+            planId: 'seed-push',
+            name: 'Push Day (Chest / Shoulders / Triceps)',
+            color: '#C97D60',
+            description: 'Volume progression session focusing on muscular hypertrophy and recovery details.',
+            exercises: [
+                { name: 'Barbell Bench Press', bodyPart: 'Chest', equipment: 'Barbell' },
+                { name: 'Incline Dumbbell Press', bodyPart: 'Chest', equipment: 'Dumbbell' },
+                { name: 'Dumbbell Fly', bodyPart: 'Chest', equipment: 'Dumbbell' },
+                { name: 'Chest Dip', bodyPart: 'Chest', equipment: 'Bodyweight' },
+                { name: 'Cable Crossover', bodyPart: 'Chest', equipment: 'Cable' },
+                { name: 'Push-Up', bodyPart: 'Chest', equipment: 'Bodyweight' },
+                { name: 'Overhead Dumbbell Press', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
+                { name: 'Arnold Press', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
+                { name: 'Lateral Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
+                { name: 'Front Dumbbell Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
+                { name: 'Tricep Overhead Extension', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
+                { name: 'Cable Tricep Pushdown', bodyPart: 'Upper arms', equipment: 'Cable' },
+                { name: 'Skull Crusher', bodyPart: 'Upper arms', equipment: 'Barbell' }
+            ]
+        },
+        {
+            day: 'Saturday',
+            type: 'workout',
+            planId: 'seed-pull',
+            name: 'Pull Day (Back / Biceps)',
+            color: '#60a5fa',
+            description: 'Upper back volume progression. Focus on mind-muscle contractions on every single rep.',
+            exercises: [
+                { name: 'Barbell Row', bodyPart: 'Back', equipment: 'Barbell' },
+                { name: 'Lat Pulldown', bodyPart: 'Back', equipment: 'Cable' },
+                { name: 'Pull-Up', bodyPart: 'Back', equipment: 'Bodyweight' },
+                { name: 'Dumbbell Single-Arm Row', bodyPart: 'Back', equipment: 'Dumbbell' },
+                { name: 'Seated Cable Row', bodyPart: 'Back', equipment: 'Cable' },
+                { name: 'Deadlift', bodyPart: 'Back', equipment: 'Barbell' },
+                { name: 'Straight-Arm Cable Pulldown', bodyPart: 'Back', equipment: 'Cable' },
+                { name: 'Dumbbell Pullover', bodyPart: 'Back', equipment: 'Dumbbell' },
+                { name: 'Face Pull', bodyPart: 'Shoulders', equipment: 'Cable' },
+                { name: 'Dumbbell Bicep Curl', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
+                { name: 'Hammer Curl', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
+                { name: 'Barbell Bicep Curl', bodyPart: 'Upper arms', equipment: 'Barbell' },
+                { name: 'Preacher Curl', bodyPart: 'Upper arms', equipment: 'Barbell' }
+            ]
+        },
+        {
+            day: 'Sunday',
+            type: 'rest',
+            name: 'Active Rest & Recovery Day',
+            color: '#5E7B6C',
+            description: 'Refuel muscles, perform deep breathing, and prepare mentally to crush the upcoming training cycle.'
         }
-    }, []);
-
-    const createPlan = (e) => {
-        e.preventDefault();
-        if (!newPlanName.trim()) return;
-
-        const colors = ['#FCC757', '#FFA9A9', '#4ade80', '#60a5fa', '#c084fc'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-        const updatedPlans = [...plans, {
-            id: Date.now().toString(),
-            name: newPlanName,
-            exercises: [],
-            color: randomColor
-        }];
-
-        setPlans(updatedPlans);
-        localStorage.setItem('fitness_plans', JSON.stringify(updatedPlans));
-        setNewPlanName('');
-        setShowNewPlanModal(false);
-    };
-
-    const deletePlan = (id) => {
-        const updatedPlans = plans.filter(p => p.id !== id);
-        setPlans(updatedPlans);
-        localStorage.setItem('fitness_plans', JSON.stringify(updatedPlans));
-    };
-
-    const removeExerciseFromPlan = (planId, indexToRemove) => {
-        const updatedPlans = plans.map(plan => {
-            if (plan.id === planId) {
-                const updatedExercises = plan.exercises.filter((_, idx) => idx !== indexToRemove);
-                return { ...plan, exercises: updatedExercises };
-            }
-            return plan;
-        });
-        setPlans(updatedPlans);
-        localStorage.setItem('fitness_plans', JSON.stringify(updatedPlans));
-    };
-
-    const totalExercises = plans.reduce((acc, plan) => acc + plan.exercises.length, 0);
+    ];
 
     return (
-        <div className="container" style={{ paddingTop: '100px', minHeight: '80vh', paddingBottom: '3rem' }}>
-            {/* Header Section */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
-                <div>
-                    <h2 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><span className="text-gradient">My Routines</span></h2>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', display: 'flex', gap: '15px' }}>
-                        <span><Calendar size={16} style={{display: 'inline', verticalAlign: '-3px'}}/> {plans.length} Routines</span>
-                        <span><Dumbbell size={16} style={{display: 'inline', verticalAlign: '-3px'}}/> {totalExercises} Exercises</span>
-                    </p>
-                </div>
-                <button className="primary-button" onClick={() => setShowNewPlanModal(true)} style={{ display: 'flex', gap: '8px', alignItems: 'center', padding: '12px 24px', borderRadius: '30px', boxShadow: '0 4px 15px rgba(0, 255, 136, 0.3)' }}>
-                    <PlusCircle size={20} /> Build New Routine
-                </button>
+        <div className="container" style={{ paddingTop: '120px', minHeight: '85vh', paddingBottom: '5rem', maxWidth: '900px' }}>
+            
+            {/* Elegant Header */}
+            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '2.5rem', fontWeight: '600', marginBottom: '0.75rem', fontFamily: 'Lora, serif' }}>
+                    Weekly Workout <span className="text-gradient">Schedule</span>
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto', fontFamily: 'Outfit, sans-serif' }}>
+                    A simple, beautifully organized training progression sheet. Tap any active session below to begin your gym training.
+                </p>
             </div>
 
-            {/* Plans Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2.5rem' }}>
-                {plans.length === 0 ? (
-                    <div className="glass" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem 2rem', color: 'var(--text-muted)', borderRadius: '24px' }}>
-                        <Calendar size={64} style={{ opacity: 0.3, marginBottom: '1.5rem', color: 'var(--primary-color)' }} />
-                        <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '0.5rem' }}>Your Canvas is Empty</h3>
-                        <p style={{ fontSize: '1.1rem', maxWidth: '400px', margin: '0 auto' }}>Create a new routine block here, then head over to the exercises page to fill it up.</p>
-                    </div>
-                ) : (
-                    plans.map(plan => {
-                        const coverImage = plan.exercises.length > 0 ? plan.exercises[0].image : null;
-                        
-                        return (
-                            <div key={plan.id} className="glass" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 0, overflow: 'hidden', borderRadius: '24px', transition: 'transform 0.3s ease, box-shadow 0.3s ease', position: 'relative', border: `1px solid rgba(255,255,255,0.05)` }}
-                                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = `0 10px 30px ${plan.color}20`; }}
-                                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                            >
-                                {/* Dynamic Cover Image Header */}
-                                <div style={{ 
-                                    height: '140px', 
-                                    position: 'relative', 
-                                    background: coverImage ? `url(${coverImage}) center/cover no-repeat` : `linear-gradient(135deg, ${plan.color}20, rgba(0,0,0,0.8))`,
-                                    borderBottom: `2px solid ${plan.color}`
-                                }}>
-                                    {/* Dark Gradient Overlay for readability */}
-                                    {coverImage && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(9, 10, 15, 1), rgba(9, 10, 15, 0.2))' }}></div>}
+            {/* Vertical Diary Schedule */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                {weeklySchedule.map((item, idx) => {
+                    const isWorkout = item.type === 'workout';
+                    
+                    return (
+                        <div 
+                            key={idx} 
+                            style={{ 
+                                background: 'var(--surface-color)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '20px',
+                                padding: '2.5rem',
+                                boxShadow: '0 4px 15px rgba(0,0,0,0.01)',
+                                position: 'relative',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1.5rem',
+                                transition: 'transform 0.2s ease',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                        >
+                            {/* Card Top Title & Details */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+                                <div>
+                                    <span style={{ fontSize: '0.85rem', color: isWorkout ? 'var(--primary-color)' : 'var(--secondary-color)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                        {item.day}
+                                    </span>
+                                    <h3 style={{ fontSize: '1.6rem', fontFamily: 'Lora, serif', margin: '5px 0', fontWeight: '600' }}>
+                                        {item.name}
+                                    </h3>
+                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
+                                        {item.description}
+                                    </p>
+                                </div>
+                                {isWorkout ? (
+                                    <span style={{ fontSize: '0.8rem', background: 'rgba(201,125,96,0.1)', color: 'var(--primary-color)', padding: '5px 12px', borderRadius: '30px', fontWeight: 'bold' }}>
+                                        💪 Active Split
+                                    </span>
+                                ) : (
+                                    <span style={{ fontSize: '0.8rem', background: 'rgba(94,123,108,0.1)', color: 'var(--secondary-color)', padding: '5px 12px', borderRadius: '30px', fontWeight: 'bold' }}>
+                                        💤 Sleep & Stretch
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Exercises List (Directly displayed for Beginners' ease) */}
+                            {isWorkout && (
+                                <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+                                    <h4 style={{ fontSize: '0.95rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1rem', fontWeight: 'bold' }}>
+                                        Exercises Scheduled ({item.exercises.length})
+                                    </h4>
                                     
-                                    <div style={{ position: 'absolute', bottom: '15px', left: '20px', right: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 2 }}>
-                                        <div>
-                                            <span style={{ background: plan.color, color: '#000', fontSize: '0.75rem', fontWeight: 'bold', padding: '3px 10px', borderRadius: '12px', textTransform: 'uppercase', marginBottom: '8px', display: 'inline-block' }}>
-                                                {plan.exercises.length} Exercises
-                                            </span>
-                                            <h3 style={{ fontSize: '1.6rem', margin: 0, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{plan.name}</h3>
-                                        </div>
-                                        <button onClick={() => deletePlan(plan.id)} style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)', transition: 'all 0.2s ease' }}
-                                                onMouseEnter={e => { e.currentTarget.style.background = '#ff4c4c'; e.currentTarget.style.borderColor = '#ff4c4c'; }}
-                                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-                                                title="Delete Routine"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px 1.5rem' }}>
+                                        {item.exercises.map((ex, exIdx) => (
+                                            <div key={exIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
+                                                <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>•</span>
+                                                <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{ex.name}</span>
+                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', background: 'var(--surface-hover)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                    {ex.equipment}
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
+                            )}
 
-                                {/* Exercise List Area */}
-                                <div style={{ padding: '1.5rem', flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.02)' }}>
-                                    {plan.exercises.length === 0 ? (
-                                        <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 0' }}>
-                                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', fontStyle: 'italic', textAlign: 'center' }}>
-                                                Empty block. Navigate to the exercises to fill this plan.
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        plan.exercises.map((ex, idx) => (
-                                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.05)', padding: '8px', borderRadius: '12px', transition: 'background 0.2s ease' }}
-                                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                                                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.4)'}
-                                            >
-                                                <img src={ex.image} alt={ex.name} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
-                                                <div style={{ flexGrow: 1, minWidth: 0 }}>
-                                                    <p style={{ margin: 0, fontWeight: '600', fontSize: '0.95rem', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ex.name}</p>
-                                                    <p style={{ margin: 0, fontSize: '0.8rem', color: plan.color, opacity: 0.9 }}>{ex.target}</p>
-                                                </div>
-                                                <button onClick={() => removeExerciseFromPlan(plan.id, idx)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px', transition: 'color 0.2s ease' }}
-                                                        onMouseEnter={e => e.currentTarget.style.color = '#ff4c4c'}
-                                                        onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-                                                        title="Remove Exercise"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                                
-                                {/* Start Workout Action */}
-                                <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <button onClick={() => navigate(`/workout/${plan.id}`)} className="primary-button" disabled={plan.exercises.length === 0} style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', fontSize: '1.1rem', padding: '14px', borderRadius: '16px', opacity: plan.exercises.length === 0 ? 0.3 : 1, filter: plan.exercises.length === 0 ? 'grayscale(100%)' : 'none' }}>
-                                        <Play fill="currentColor" size={18} /> {plan.exercises.length === 0 ? 'Add Exercises to Start' : 'Start Workout'}
+                            {/* Bottom Call to Action */}
+                            {isWorkout ? (
+                                <div style={{ display: 'flex', justifyContent: 'flex-start', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+                                    <button 
+                                        onClick={() => navigate(`/workout/${item.planId}`)}
+                                        className="primary-button"
+                                        style={{ 
+                                            padding: '10px 24px', 
+                                            borderRadius: '30px', 
+                                            display: 'inline-flex', 
+                                            alignItems: 'center', 
+                                            gap: '8px', 
+                                            fontWeight: '600',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        <Play size={14} fill="currentColor" /> Start Active Session
                                     </button>
                                 </div>
-                            </div>
-                        );
-                    })
-                )}
+                            ) : (
+                                <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Heart size={14} color="var(--primary-color)" /> Hydrate with Electrolytes</span>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><ShieldCheck size={14} color="var(--secondary-color)" /> Light Mobility Work</span>
+                                </div>
+                            )}
+
+                        </div>
+                    );
+                })}
             </div>
 
-            {/* Default New Plan Modal */}
-            {showNewPlanModal && (
-                <div className="video-modal-overlay" style={{ zIndex: 1000 }} onClick={() => setShowNewPlanModal(false)}>
-                    <div className="glass" style={{ padding: '2.5rem', width: '100%', maxWidth: '450px', cursor: 'default', borderRadius: '24px', position: 'relative', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
-                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', background: 'var(--primary-color)' }}></div>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <h3 style={{ fontSize: '1.8rem', margin: 0 }}>New Routine</h3>
-                            <button onClick={() => setShowNewPlanModal(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-                        </div>
-                        
-                        <form onSubmit={createPlan} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)', fontSize: '0.95rem' }}>Routine Name</label>
-                                <input required type="text" value={newPlanName} onChange={e => setNewPlanName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '12px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '1.1rem', transition: 'border-color 0.3s ease' }} placeholder="e.g. Back and Biceps" autoFocus />
-                            </div>
-                            <button type="submit" className="primary-button" style={{ width: '100%', padding: '16px', borderRadius: '12px', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center' }}>
-                                <PlusCircle size={20} /> Build Routine
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Coach Quote Footer */}
+            <div style={{ marginTop: '4rem', textAlign: 'center', padding: '2rem', border: '1px solid var(--glass-border)', borderRadius: '20px', background: 'var(--surface-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <p style={{ margin: 0, fontStyle: 'italic', fontFamily: 'Lora, serif', fontSize: '1.1rem', color: 'var(--primary-color)' }}>
+                    "The secret of strength lies in the simplicity of progression."
+                </p>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold', uppercase: true, letterSpacing: '0.5px' }}>
+                    — ALPHA FITNESS COACH DIRECTIVE
+                </span>
+            </div>
+
         </div>
     );
 }
