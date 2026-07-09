@@ -1,160 +1,214 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Dumbbell, ShieldCheck, Heart, Sparkles } from 'lucide-react';
+import { Play, Dumbbell, ShieldCheck, Heart, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import '../index.css';
+
+// Map exercise names to their image filenames in /exercises/
+const exerciseImageMap = {
+    // Push Day exercises
+    'Barbell Bench Press': '/exercises/Barbell_Bench_Press.png',
+    'Incline Dumbbell Press': '/exercises/Incline_Dumbell_Press.png',
+    'Dumbbell Fly': '/exercises/Dumbbell_Fly.png',
+    'Chest Dip': '/exercises/Chest_Dips.png',
+    'Cable Crossover': '/exercises/Cable_Crossover.png',
+    'Push-Up': '/exercises/Push-Up.png',
+    'Overhead Dumbbell Press': '/exercises/Overhead_Dumbbell_Press.png',
+    'Arnold Press': '/exercises/Arnold_Press.png',
+    'Lateral Raise': '/exercises/Lateral_Raise.png',
+    'Front Dumbbell Raise': '/exercises/Front_Dumbbell_Raise.png',
+    'Tricep Overhead Extension': '/exercises/Tricep_Overhead_Extension.png',
+    'Cable Tricep Pushdown': '/exercises/Cable_Tricep_Pushdown.png',
+    'Skull Crusher': '/exercises/Skull_Crusher.png',
+
+    // Pull Day exercises
+    'Barbell Row': '/exercises/Barbell_Row.png',
+    'Lat Pulldown': '/exercises/Lat_Pulldown.png',
+    'Pull-Up': '/exercises/Pull-Up.png',
+    'Dumbbell Single-Arm Row': '/exercises/Dumbbell_Single-Arm_Row.png',
+    'Seated Cable Row': '/exercises/Seated_Cable_Row.png',
+    'Deadlift': '/exercises/Deadlift.png',
+    'Straight-Arm Cable Pulldown': '/exercises/Straight-Arm_Cable_Pulldown.png',
+    'Dumbbell Pullover': '/exercises/Dumbbell_Pullover.png',
+    'Face Pull': '/exercises/Face_Pull.png',
+    'Dumbbell Bicep Curl': '/exercises/Dumbell_Bicep_Curl.png',
+    'Hammer Curl': '/exercises/Hammer_Curl.png',
+    'Barbell Bicep Curl': '/exercises/Barbell_Bicep_Curl.png',
+    'Preacher Curl': '/exercises/Preacher_Curl.png',
+
+    // Leg Day exercises
+    'Barbell Back Squat': '/exercises/Barbell_Back_Squat.png',
+    'Leg Press': '/exercises/Leg_Press.png',
+    'Dumbbell Lunge': '/exercises/Dumbell_Lunge.png',
+    'Romanian Deadlift': '/exercises/Romanian_Deadlift.png',
+    'Lying Leg Curl': '/exercises/Lying_Leg_Curl.png',
+    'Bulgarian Split Squat': '/exercises/Bulgarian_Split_Squat.png',
+    'Hip Thrust': '/exercises/Hip_Thrust.png',
+    'Standing Calf Raise': '/exercises/Standing_Calf_Raise.png',
+    'Abdominal Crunch': '/exercises/Abdominal_Crunch.png',
+    'Hanging Leg Raise': '/exercises/Hanging_Leg_Raise.png',
+    'Russian Twist': '/exercises/Russian_Twist.png',
+    'Plank': '/exercises/Plank.png',
+    'Bicycle Crunch': '/exercises/Bicycle_Crunch.png',
+};
 
 export default function WorkoutPlanner() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const [expandedDay, setExpandedDay] = useState(null);
+
+    const toggleDay = (idx) => {
+        setExpandedDay(prev => prev === idx ? null : idx);
+    };
 
     const weeklySchedule = [
         {
-            day: 'Monday',
+            day: 'Push Day',
             type: 'workout',
             planId: 'seed-push',
-            name: 'Push Day (Chest / Shoulders / Triceps)',
+            name: 'Chest / Shoulders / Triceps',
             color: '#C97D60',
+            icon: '🔥',
             description: 'Focused on upper body pushing movements to build the chest, deltoids, and triceps.',
             exercises: [
-                { name: 'Barbell Bench Press', bodyPart: 'Chest', equipment: 'Barbell' },
-                { name: 'Incline Dumbbell Press', bodyPart: 'Chest', equipment: 'Dumbbell' },
-                { name: 'Dumbbell Fly', bodyPart: 'Chest', equipment: 'Dumbbell' },
-                { name: 'Chest Dip', bodyPart: 'Chest', equipment: 'Bodyweight' },
-                { name: 'Cable Crossover', bodyPart: 'Chest', equipment: 'Cable' },
-                { name: 'Push-Up', bodyPart: 'Chest', equipment: 'Bodyweight' },
-                { name: 'Overhead Dumbbell Press', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
-                { name: 'Arnold Press', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
-                { name: 'Lateral Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
-                { name: 'Front Dumbbell Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
-                { name: 'Tricep Overhead Extension', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
-                { name: 'Cable Tricep Pushdown', bodyPart: 'Upper arms', equipment: 'Cable' },
-                { name: 'Skull Crusher', bodyPart: 'Upper arms', equipment: 'Barbell' }
+                { name: 'Barbell Bench Press', bodyPart: 'Chest', equipment: 'Barbell', sets: '4', reps: '8-10' },
+                { name: 'Incline Dumbbell Press', bodyPart: 'Chest', equipment: 'Dumbbell', sets: '3', reps: '10-12' },
+                { name: 'Dumbbell Fly', bodyPart: 'Chest', equipment: 'Dumbbell', sets: '3', reps: '12' },
+                { name: 'Chest Dip', bodyPart: 'Chest', equipment: 'Bodyweight', sets: '3', reps: '10-12' },
+                { name: 'Cable Crossover', bodyPart: 'Chest', equipment: 'Cable', sets: '3', reps: '12-15' },
+                { name: 'Push-Up', bodyPart: 'Chest', equipment: 'Bodyweight', sets: '3', reps: 'To Failure' },
+                { name: 'Overhead Dumbbell Press', bodyPart: 'Shoulders', equipment: 'Dumbbell', sets: '4', reps: '8-10' },
+                { name: 'Arnold Press', bodyPart: 'Shoulders', equipment: 'Dumbbell', sets: '3', reps: '10-12' },
+                { name: 'Lateral Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell', sets: '4', reps: '12-15' },
+                { name: 'Front Dumbbell Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell', sets: '3', reps: '12' },
+                { name: 'Tricep Overhead Extension', bodyPart: 'Triceps', equipment: 'Dumbbell', sets: '3', reps: '10-12' },
+                { name: 'Cable Tricep Pushdown', bodyPart: 'Triceps', equipment: 'Cable', sets: '3', reps: '12-15' },
+                { name: 'Skull Crusher', bodyPart: 'Triceps', equipment: 'Barbell', sets: '3', reps: '10-12' }
             ]
         },
         {
-            day: 'Tuesday',
+            day: 'Pull Day',
             type: 'workout',
             planId: 'seed-pull',
-            name: 'Pull Day (Back / Biceps)',
+            name: 'Back / Biceps',
             color: '#60a5fa',
+            icon: '💪',
             description: 'Focused on upper body pulling patterns to construct back thickness, lat width, and arm strength.',
             exercises: [
-                { name: 'Barbell Row', bodyPart: 'Back', equipment: 'Barbell' },
-                { name: 'Lat Pulldown', bodyPart: 'Back', equipment: 'Cable' },
-                { name: 'Pull-Up', bodyPart: 'Back', equipment: 'Bodyweight' },
-                { name: 'Dumbbell Single-Arm Row', bodyPart: 'Back', equipment: 'Dumbbell' },
-                { name: 'Seated Cable Row', bodyPart: 'Back', equipment: 'Cable' },
-                { name: 'Deadlift', bodyPart: 'Back', equipment: 'Barbell' },
-                { name: 'Straight-Arm Cable Pulldown', bodyPart: 'Back', equipment: 'Cable' },
-                { name: 'Dumbbell Pullover', bodyPart: 'Back', equipment: 'Dumbbell' },
-                { name: 'Face Pull', bodyPart: 'Shoulders', equipment: 'Cable' },
-                { name: 'Dumbbell Bicep Curl', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
-                { name: 'Hammer Curl', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
-                { name: 'Barbell Bicep Curl', bodyPart: 'Upper arms', equipment: 'Barbell' },
-                { name: 'Preacher Curl', bodyPart: 'Upper arms', equipment: 'Barbell' }
+                { name: 'Barbell Row', bodyPart: 'Back', equipment: 'Barbell', sets: '4', reps: '8-10' },
+                { name: 'Lat Pulldown', bodyPart: 'Back', equipment: 'Cable', sets: '3', reps: '10-12' },
+                { name: 'Pull-Up', bodyPart: 'Back', equipment: 'Bodyweight', sets: '3', reps: 'To Failure' },
+                { name: 'Dumbbell Single-Arm Row', bodyPart: 'Back', equipment: 'Dumbbell', sets: '3', reps: '10-12' },
+                { name: 'Seated Cable Row', bodyPart: 'Back', equipment: 'Cable', sets: '3', reps: '10-12' },
+                { name: 'Deadlift', bodyPart: 'Back', equipment: 'Barbell', sets: '4', reps: '5-8' },
+                { name: 'Straight-Arm Cable Pulldown', bodyPart: 'Back', equipment: 'Cable', sets: '3', reps: '12-15' },
+                { name: 'Dumbbell Pullover', bodyPart: 'Back', equipment: 'Dumbbell', sets: '3', reps: '12' },
+                { name: 'Face Pull', bodyPart: 'Rear Delts', equipment: 'Cable', sets: '3', reps: '15-20' },
+                { name: 'Dumbbell Bicep Curl', bodyPart: 'Biceps', equipment: 'Dumbbell', sets: '3', reps: '10-12' },
+                { name: 'Hammer Curl', bodyPart: 'Biceps', equipment: 'Dumbbell', sets: '3', reps: '10-12' },
+                { name: 'Barbell Bicep Curl', bodyPart: 'Biceps', equipment: 'Barbell', sets: '3', reps: '10-12' },
+                { name: 'Preacher Curl', bodyPart: 'Biceps', equipment: 'Barbell', sets: '3', reps: '10-12' }
             ]
         },
         {
-            day: 'Wednesday',
-            type: 'rest',
-            name: 'Active Rest & Recovery Day',
-            color: '#5E7B6C',
-            description: 'Let your nervous system recover. Focus on light walking, hydration, and organic mobility stretching.'
-        },
-        {
-            day: 'Thursday',
+            day: 'Leg Day',
             type: 'workout',
             planId: 'seed-legs',
-            name: 'Leg Day (Quads / Hamstrings / Core)',
+            name: 'Quads / Hamstrings / Core',
             color: '#4ade80',
+            icon: '🦵',
             description: 'Intense lower body session targeting quads, hamstrings, glutes, calves, and a complete abs circuit.',
             exercises: [
-                { name: 'Barbell Back Squat', bodyPart: 'Upper legs', equipment: 'Barbell' },
-                { name: 'Leg Press', bodyPart: 'Upper legs', equipment: 'Machine' },
-                { name: 'Dumbbell Lunge', bodyPart: 'Upper legs', equipment: 'Dumbbell' },
-                { name: 'Romanian Deadlift', bodyPart: 'Upper legs', equipment: 'Barbell' },
-                { name: 'Lying Leg Curl', bodyPart: 'Upper legs', equipment: 'Machine' },
-                { name: 'Bulgarian Split Squat', bodyPart: 'Upper legs', equipment: 'Dumbbell' },
-                { name: 'Hip Thrust', bodyPart: 'Upper legs', equipment: 'Barbell' },
-                { name: 'Standing Calf Raise', bodyPart: 'Upper legs', equipment: 'Bodyweight' },
-                { name: 'Abdominal Crunch', bodyPart: 'Waist', equipment: 'Bodyweight' },
-                { name: 'Hanging Leg Raise', bodyPart: 'Waist', equipment: 'Bodyweight' },
-                { name: 'Russian Twist', bodyPart: 'Waist', equipment: 'Dumbbell' },
-                { name: 'Plank', bodyPart: 'Waist', equipment: 'Bodyweight' },
-                { name: 'Bicycle Crunch', bodyPart: 'Waist', equipment: 'Bodyweight' }
+                { name: 'Barbell Back Squat', bodyPart: 'Quads', equipment: 'Barbell', sets: '4', reps: '6-8' },
+                { name: 'Leg Press', bodyPart: 'Quads', equipment: 'Machine', sets: '4', reps: '10-12' },
+                { name: 'Dumbbell Lunge', bodyPart: 'Quads', equipment: 'Dumbbell', sets: '3', reps: '10 each' },
+                { name: 'Romanian Deadlift', bodyPart: 'Hamstrings', equipment: 'Barbell', sets: '4', reps: '8-10' },
+                { name: 'Lying Leg Curl', bodyPart: 'Hamstrings', equipment: 'Machine', sets: '3', reps: '12' },
+                { name: 'Bulgarian Split Squat', bodyPart: 'Quads', equipment: 'Dumbbell', sets: '3', reps: '10 each' },
+                { name: 'Hip Thrust', bodyPart: 'Glutes', equipment: 'Barbell', sets: '4', reps: '10-12' },
+                { name: 'Standing Calf Raise', bodyPart: 'Calves', equipment: 'Bodyweight', sets: '4', reps: '15-20' },
+                { name: 'Abdominal Crunch', bodyPart: 'Abs', equipment: 'Bodyweight', sets: '3', reps: '20' },
+                { name: 'Hanging Leg Raise', bodyPart: 'Abs', equipment: 'Bodyweight', sets: '3', reps: '12-15' },
+                { name: 'Russian Twist', bodyPart: 'Abs', equipment: 'Dumbbell', sets: '3', reps: '20' },
+                { name: 'Plank', bodyPart: 'Core', equipment: 'Bodyweight', sets: '3', reps: '45-60s' },
+                { name: 'Bicycle Crunch', bodyPart: 'Abs', equipment: 'Bodyweight', sets: '3', reps: '20' }
             ]
         },
         {
-            day: 'Friday',
-            type: 'workout',
-            planId: 'seed-push',
-            name: 'Push Day (Chest / Shoulders / Triceps)',
-            color: '#C97D60',
-            description: 'Volume progression session focusing on muscular hypertrophy and recovery details.',
-            exercises: [
-                { name: 'Barbell Bench Press', bodyPart: 'Chest', equipment: 'Barbell' },
-                { name: 'Incline Dumbbell Press', bodyPart: 'Chest', equipment: 'Dumbbell' },
-                { name: 'Dumbbell Fly', bodyPart: 'Chest', equipment: 'Dumbbell' },
-                { name: 'Chest Dip', bodyPart: 'Chest', equipment: 'Bodyweight' },
-                { name: 'Cable Crossover', bodyPart: 'Chest', equipment: 'Cable' },
-                { name: 'Push-Up', bodyPart: 'Chest', equipment: 'Bodyweight' },
-                { name: 'Overhead Dumbbell Press', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
-                { name: 'Arnold Press', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
-                { name: 'Lateral Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
-                { name: 'Front Dumbbell Raise', bodyPart: 'Shoulders', equipment: 'Dumbbell' },
-                { name: 'Tricep Overhead Extension', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
-                { name: 'Cable Tricep Pushdown', bodyPart: 'Upper arms', equipment: 'Cable' },
-                { name: 'Skull Crusher', bodyPart: 'Upper arms', equipment: 'Barbell' }
-            ]
-        },
-        {
-            day: 'Saturday',
-            type: 'workout',
-            planId: 'seed-pull',
-            name: 'Pull Day (Back / Biceps)',
-            color: '#60a5fa',
-            description: 'Upper back volume progression. Focus on mind-muscle contractions on every single rep.',
-            exercises: [
-                { name: 'Barbell Row', bodyPart: 'Back', equipment: 'Barbell' },
-                { name: 'Lat Pulldown', bodyPart: 'Back', equipment: 'Cable' },
-                { name: 'Pull-Up', bodyPart: 'Back', equipment: 'Bodyweight' },
-                { name: 'Dumbbell Single-Arm Row', bodyPart: 'Back', equipment: 'Dumbbell' },
-                { name: 'Seated Cable Row', bodyPart: 'Back', equipment: 'Cable' },
-                { name: 'Deadlift', bodyPart: 'Back', equipment: 'Barbell' },
-                { name: 'Straight-Arm Cable Pulldown', bodyPart: 'Back', equipment: 'Cable' },
-                { name: 'Dumbbell Pullover', bodyPart: 'Back', equipment: 'Dumbbell' },
-                { name: 'Face Pull', bodyPart: 'Shoulders', equipment: 'Cable' },
-                { name: 'Dumbbell Bicep Curl', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
-                { name: 'Hammer Curl', bodyPart: 'Upper arms', equipment: 'Dumbbell' },
-                { name: 'Barbell Bicep Curl', bodyPart: 'Upper arms', equipment: 'Barbell' },
-                { name: 'Preacher Curl', bodyPart: 'Upper arms', equipment: 'Barbell' }
-            ]
-        },
-        {
-            day: 'Sunday',
+            day: 'Rest Day',
             type: 'rest',
-            name: 'Active Rest & Recovery Day',
+            name: 'Active Recovery & Mobility',
             color: '#5E7B6C',
-            description: 'Refuel muscles, perform deep breathing, and prepare mentally to crush the upcoming training cycle.'
+            icon: '🧘',
+            description: 'Let your nervous system recover. Focus on light walking, hydration, deep stretching, and organic mobility work. Sleep 7-9 hours for optimal muscle repair.'
         }
     ];
 
+    const bodyPartColors = {
+        'Chest': '#C97D60',
+        'Shoulders': '#7B8B7B',
+        'Triceps': '#A88B7B',
+        'Back': '#60a5fa',
+        'Biceps': '#8B6FC0',
+        'Rear Delts': '#7B8B7B',
+        'Quads': '#4ade80',
+        'Hamstrings': '#F59E0B',
+        'Glutes': '#EC4899',
+        'Calves': '#06B6D4',
+        'Abs': '#EF4444',
+        'Core': '#EF4444',
+    };
+
     return (
-        <div className="container" style={{ paddingTop: '120px', minHeight: '85vh', paddingBottom: '5rem', maxWidth: '900px' }}>
+        <div className="container" style={{ paddingTop: '120px', minHeight: '85vh', paddingBottom: '5rem', maxWidth: '960px' }}>
             
             {/* Elegant Header */}
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '2.5rem', fontWeight: '600', marginBottom: '0.75rem', fontFamily: 'Lora, serif' }}>
-                    Weekly Workout <span className="text-gradient">Schedule</span>
+                    Training <span className="text-gradient">Routine</span>
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto', fontFamily: 'Outfit, sans-serif' }}>
-                    A simple, beautifully organized training progression sheet. Tap any active session below to begin your gym training.
+                    A structured Push / Pull / Legs split designed for maximum hypertrophy and strength progression.
                 </p>
             </div>
 
-            {/* Vertical Diary Schedule */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            {currentUser && (
+                <div className="glass" style={{ 
+                    padding: '1.5rem 2rem', 
+                    borderRadius: '16px', 
+                    marginBottom: '2rem', 
+                    borderLeft: '4px solid var(--primary-color)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '15px',
+                    animation: 'fadeUp 0.5s ease forwards'
+                }}>
+                    <div>
+                        <h4 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>Welcome back, {currentUser.name}! 👋</h4>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+                            Ready to crush your training session today? Let's stay consistent!
+                        </p>
+                    </div>
+                    <span style={{ 
+                        fontSize: '0.8rem', 
+                        background: 'rgba(94, 123, 108, 0.1)', 
+                        color: 'var(--secondary-color)', 
+                        padding: '6px 12px', 
+                        borderRadius: '30px', 
+                        fontWeight: 'bold' 
+                    }}>
+                        Joined: {new Date(currentUser.joined).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </span>
+                </div>
+            )}
+
+            {/* Routine Cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 {weeklySchedule.map((item, idx) => {
                     const isWorkout = item.type === 'workout';
+                    const isExpanded = expandedDay === idx;
                     
                     return (
                         <div 
@@ -163,88 +217,224 @@ export default function WorkoutPlanner() {
                                 background: 'var(--surface-color)',
                                 border: '1px solid var(--glass-border)',
                                 borderRadius: '20px',
-                                padding: '2.5rem',
-                                boxShadow: '0 4px 15px rgba(0,0,0,0.01)',
-                                position: 'relative',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '1.5rem',
-                                transition: 'transform 0.2s ease',
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                             }}
-                            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)'; }}
                         >
-                            {/* Card Top Title & Details */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
-                                <div>
-                                    <span style={{ fontSize: '0.85rem', color: isWorkout ? 'var(--primary-color)' : 'var(--secondary-color)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                        {item.day}
-                                    </span>
-                                    <h3 style={{ fontSize: '1.6rem', fontFamily: 'Lora, serif', margin: '5px 0', fontWeight: '600' }}>
-                                        {item.name}
-                                    </h3>
-                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
-                                        {item.description}
-                                    </p>
-                                </div>
-                                {isWorkout ? (
-                                    <span style={{ fontSize: '0.8rem', background: 'rgba(201,125,96,0.1)', color: 'var(--primary-color)', padding: '5px 12px', borderRadius: '30px', fontWeight: 'bold' }}>
-                                        💪 Active Split
-                                    </span>
-                                ) : (
-                                    <span style={{ fontSize: '0.8rem', background: 'rgba(94,123,108,0.1)', color: 'var(--secondary-color)', padding: '5px 12px', borderRadius: '30px', fontWeight: 'bold' }}>
-                                        💤 Sleep & Stretch
-                                    </span>
-                                )}
-                            </div>
+                            {/* Card Header with accent bar */}
+                            <div style={{ 
+                                height: '4px', 
+                                background: `linear-gradient(90deg, ${item.color}, ${item.color}88)`,
+                            }} />
 
-                            {/* Exercises List (Directly displayed for Beginners' ease) */}
-                            {isWorkout && (
-                                <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
-                                    <h4 style={{ fontSize: '0.95rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1rem', fontWeight: 'bold' }}>
-                                        Exercises Scheduled ({item.exercises.length})
-                                    </h4>
-                                    
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px 1.5rem' }}>
-                                        {item.exercises.map((ex, exIdx) => (
-                                            <div key={exIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
-                                                <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>•</span>
-                                                <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{ex.name}</span>
-                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', background: 'var(--surface-hover)', padding: '2px 6px', borderRadius: '4px' }}>
-                                                    {ex.equipment}
-                                                </span>
-                                            </div>
-                                        ))}
+                            <div style={{ padding: '2rem 2.5rem' }}>
+                                {/* Card Top Title & Details */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+                                    <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                                            <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
+                                            <span style={{ 
+                                                fontSize: '0.85rem', 
+                                                color: item.color, 
+                                                fontWeight: '800', 
+                                                textTransform: 'uppercase', 
+                                                letterSpacing: '1.5px' 
+                                            }}>
+                                                {item.day}
+                                            </span>
+                                        </div>
+                                        <h3 style={{ fontSize: '1.5rem', fontFamily: 'Lora, serif', margin: '5px 0', fontWeight: '600' }}>
+                                            {item.name}
+                                        </h3>
+                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0, maxWidth: '600px' }}>
+                                            {item.description}
+                                        </p>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                                        {isWorkout ? (
+                                            <span style={{ 
+                                                fontSize: '0.8rem', 
+                                                background: `${item.color}15`, 
+                                                color: item.color, 
+                                                padding: '5px 14px', 
+                                                borderRadius: '30px', 
+                                                fontWeight: 'bold',
+                                                border: `1px solid ${item.color}30`
+                                            }}>
+                                                {item.exercises.length} Exercises
+                                            </span>
+                                        ) : (
+                                            <span style={{ 
+                                                fontSize: '0.8rem', 
+                                                background: 'rgba(94,123,108,0.1)', 
+                                                color: 'var(--secondary-color)', 
+                                                padding: '5px 14px', 
+                                                borderRadius: '30px', 
+                                                fontWeight: 'bold' 
+                                            }}>
+                                                💤 Recovery
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Bottom Call to Action */}
-                            {isWorkout ? (
-                                <div style={{ display: 'flex', justifyContent: 'flex-start', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
-                                    <button 
-                                        onClick={() => navigate(`/workout/${item.planId}`)}
-                                        className="primary-button"
-                                        style={{ 
-                                            padding: '10px 24px', 
-                                            borderRadius: '30px', 
-                                            display: 'inline-flex', 
-                                            alignItems: 'center', 
-                                            gap: '8px', 
-                                            fontWeight: '600',
-                                            fontSize: '0.9rem'
-                                        }}
-                                    >
-                                        <Play size={14} fill="currentColor" /> Start Active Session
-                                    </button>
-                                </div>
-                            ) : (
-                                <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem', display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Heart size={14} color="var(--primary-color)" /> Hydrate with Electrolytes</span>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><ShieldCheck size={14} color="var(--secondary-color)" /> Light Mobility Work</span>
-                                </div>
-                            )}
+                                {/* Exercises Section */}
+                                {isWorkout && (
+                                    <div style={{ marginTop: '1.5rem' }}>
+                                        {/* Toggle Button */}
+                                        <button 
+                                            onClick={() => toggleDay(idx)}
+                                            style={{
+                                                width: '100%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                background: 'var(--surface-hover)',
+                                                border: '1px solid var(--glass-border)',
+                                                borderRadius: '12px',
+                                                padding: '12px 16px',
+                                                cursor: 'pointer',
+                                                color: 'var(--text-main)',
+                                                fontSize: '0.9rem',
+                                                fontWeight: '600',
+                                                transition: 'all 0.2s ease'
+                                            }}
+                                        >
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <Dumbbell size={16} color={item.color} />
+                                                {isExpanded ? 'Hide Exercises' : 'View All Exercises'}
+                                            </span>
+                                            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                        </button>
 
+                                        {/* Expanded Exercise Cards with Images */}
+                                        {isExpanded && (
+                                            <div style={{ 
+                                                marginTop: '1rem',
+                                                display: 'grid', 
+                                                gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', 
+                                                gap: '12px',
+                                                animation: 'fadeUp 0.3s ease forwards'
+                                            }}>
+                                                {item.exercises.map((ex, exIdx) => (
+                                                    <div 
+                                                        key={exIdx} 
+                                                        style={{ 
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '12px',
+                                                            background: 'var(--surface-hover)',
+                                                            border: '1px solid var(--glass-border)',
+                                                            borderRadius: '14px',
+                                                            padding: '10px 12px',
+                                                            transition: 'all 0.2s ease',
+                                                        }}
+                                                        onMouseEnter={e => {
+                                                            e.currentTarget.style.borderColor = item.color + '60';
+                                                            e.currentTarget.style.background = item.color + '08';
+                                                        }}
+                                                        onMouseLeave={e => {
+                                                            e.currentTarget.style.borderColor = 'var(--glass-border)';
+                                                            e.currentTarget.style.background = 'var(--surface-hover)';
+                                                        }}
+                                                    >
+                                                        {/* Exercise Image */}
+                                                        <div style={{
+                                                            width: '56px',
+                                                            height: '56px',
+                                                            borderRadius: '12px',
+                                                            overflow: 'hidden',
+                                                            flexShrink: 0,
+                                                            background: `${item.color}10`,
+                                                            border: `1px solid ${item.color}20`,
+                                                        }}>
+                                                            <img
+                                                                src={exerciseImageMap[ex.name] || '/exercises/placeholder.png'}
+                                                                alt={ex.name}
+                                                                loading="lazy"
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    objectFit: 'cover',
+                                                                }}
+                                                                onError={(e) => {
+                                                                    e.target.style.display = 'none';
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        
+                                                        {/* Exercise Info */}
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <div style={{ 
+                                                                fontSize: '0.88rem', 
+                                                                fontWeight: '600', 
+                                                                color: 'var(--text-main)',
+                                                                marginBottom: '4px',
+                                                                whiteSpace: 'nowrap',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis'
+                                                            }}>
+                                                                {ex.name}
+                                                            </div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                                                <span style={{ 
+                                                                    fontSize: '0.7rem', 
+                                                                    background: `${bodyPartColors[ex.bodyPart] || item.color}18`,
+                                                                    color: bodyPartColors[ex.bodyPart] || item.color,
+                                                                    padding: '2px 7px', 
+                                                                    borderRadius: '6px',
+                                                                    fontWeight: '600'
+                                                                }}>
+                                                                    {ex.bodyPart}
+                                                                </span>
+                                                                <span style={{ 
+                                                                    fontSize: '0.7rem', 
+                                                                    color: 'var(--text-muted)',
+                                                                    background: 'var(--surface-color)',
+                                                                    padding: '2px 7px',
+                                                                    borderRadius: '6px'
+                                                                }}>
+                                                                    {ex.sets} × {ex.reps}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Bottom Call to Action */}
+                                <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+                                    {isWorkout ? (
+                                        <button 
+                                            onClick={() => navigate(`/workout/${item.planId}`)}
+                                            className="primary-button"
+                                            style={{ 
+                                                padding: '10px 24px', 
+                                                borderRadius: '30px', 
+                                                display: 'inline-flex', 
+                                                alignItems: 'center', 
+                                                gap: '8px', 
+                                                fontWeight: '600',
+                                                fontSize: '0.9rem'
+                                            }}
+                                        >
+                                            <Play size={14} fill="currentColor" /> Start Active Session
+                                        </button>
+                                    ) : (
+                                        <div style={{ display: 'flex', gap: '15px', color: 'var(--text-muted)', fontSize: '0.85rem', flexWrap: 'wrap' }}>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Heart size={14} color="var(--primary-color)" /> Hydrate with Electrolytes</span>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><ShieldCheck size={14} color="var(--secondary-color)" /> Light Mobility Work</span>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Sparkles size={14} color="#F59E0B" /> Sleep 7-9 Hours</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     );
                 })}
@@ -255,7 +445,7 @@ export default function WorkoutPlanner() {
                 <p style={{ margin: 0, fontStyle: 'italic', fontFamily: 'Lora, serif', fontSize: '1.1rem', color: 'var(--primary-color)' }}>
                     "The secret of strength lies in the simplicity of progression."
                 </p>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold', uppercase: true, letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold', letterSpacing: '0.5px' }}>
                     — ALPHA FITNESS COACH DIRECTIVE
                 </span>
             </div>

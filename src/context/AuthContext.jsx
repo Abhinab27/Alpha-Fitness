@@ -1,4 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -9,61 +11,59 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Mock checking for existing session in localStorage
-        const storedUser = localStorage.getItem('fitness_user');
-        if (storedUser) {
-            setCurrentUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        const verifySession = async () => {
+            const token = localStorage.getItem('fitness_token');
+            if (token) {
+                try {
+                    // Set authorization header for API requests
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                    const response = await axios.get('/api/auth/me');
+                    setCurrentUser(response.data);
+                } catch (error) {
+                    console.error("Failed to verify user session token:", error.message);
+                    localStorage.removeItem('fitness_token');
+                    delete axios.defaults.headers.common['Authorization'];
+                    setCurrentUser(null);
+                }
+            }
+            setLoading(false);
+        };
+        verifySession();
     }, []);
 
-    const login = (email, password) => {
-        // Very basic mock login - in reality this goes to a real backend
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (!email || !password) {
-                    reject(new Error("Email and password required"));
-                    return;
-                }
-                
-                const mockUser = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    email: email,
-                    name: email.split('@')[0],
-                    joined: new Date().toISOString()
-                };
-                
-                localStorage.setItem('fitness_user', JSON.stringify(mockUser));
-                setCurrentUser(mockUser);
-                resolve(mockUser);
-            }, 800);
-        });
+    const login = async (email, password) => {
+        try {
+            const response = await axios.post('/api/auth/login', { email, password });
+            const { user, token } = response.data;
+            
+            localStorage.setItem('fitness_token', token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            setCurrentUser(user);
+            return user;
+        } catch (error) {
+            const errorMsg = error.response?.data?.error || "Login failed. Please check your credentials.";
+            throw new Error(errorMsg);
+        }
     };
 
-    const signup = (email, password, name) => {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (!email || !password || !name) {
-                    reject(new Error("All fields are required"));
-                    return;
-                }
-                
-                const mockUser = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    email: email,
-                    name: name,
-                    joined: new Date().toISOString()
-                };
-                
-                localStorage.setItem('fitness_user', JSON.stringify(mockUser));
-                setCurrentUser(mockUser);
-                resolve(mockUser);
-            }, 800);
-        });
+    const signup = async (email, password, name) => {
+        try {
+            const response = await axios.post('/api/auth/signup', { email, password, name });
+            const { user, token } = response.data;
+            
+            localStorage.setItem('fitness_token', token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            setCurrentUser(user);
+            return user;
+        } catch (error) {
+            const errorMsg = error.response?.data?.error || "Registration failed. Please try again.";
+            throw new Error(errorMsg);
+        }
     };
 
     const logout = () => {
-        localStorage.removeItem('fitness_user');
+        localStorage.removeItem('fitness_token');
+        delete axios.defaults.headers.common['Authorization'];
         setCurrentUser(null);
     };
 

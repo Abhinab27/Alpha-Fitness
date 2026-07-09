@@ -1,14 +1,19 @@
+/* global process, Buffer */
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Token key secret for signing
+const JWT_SECRET = process.env.JWT_SECRET || 'alpha_fitness_super_secret_key_12984';
 
 // Enable CORS and JSON parsing
 app.use(cors());
@@ -26,9 +31,151 @@ const getExercises = () => {
     }
 };
 
+// Helper to load users database
+const getUsers = () => {
+    try {
+        const filePath = path.join(__dirname, 'data', 'users.json');
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, '[]', 'utf-8');
+            return [];
+        }
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        return JSON.parse(fileContent);
+    } catch (error) {
+        console.error("Failed to read users.json", error);
+        return [];
+    }
+};
+
+// Helper to save users database
+const saveUsers = (users) => {
+    try {
+        const filePath = path.join(__dirname, 'data', 'users.json');
+        fs.writeFileSync(filePath, JSON.stringify(users, null, 2), 'utf-8');
+    } catch (error) {
+        console.error("Failed to write users.json", error);
+    }
+};
+
+// Hash password with salt
+const hashPassword = (password, salt) => {
+    return crypto.createHmac('sha256', salt).update(password).digest('hex');
+};
+
+// Generate custom signed token: userId.signature
+const generateToken = (userId) => {
+    const signature = crypto.createHmac('sha256', JWT_SECRET).update(userId).digest('hex');
+    return Buffer.from(userId).toString('base64') + '.' + signature;
+};
+
+// Verify signed token and return userId
+const verifyToken = (token) => {
+    if (!token) return null;
+    const parts = token.split('.');
+    if (parts.length !== 2) return null;
+    const [encodedUserId, signature] = parts;
+    try {
+        const userId = Buffer.from(encodedUserId, 'base64').toString('utf-8');
+        const expectedSignature = crypto.createHmac('sha256', JWT_SECRET).update(userId).digest('hex');
+        if (signature === expectedSignature) {
+            return userId;
+        }
+    } catch {
+        return null;
+    }
+    return null;
+};
+
 /* =========================================================================
    API Endpoints
    ========================================================================= */
+
+// --- Authentication Endpoints ---
+
+// 1. Signup Route
+app.post('/api/auth/signup', (req, res) => {
+    const { email, password, name } = req.body;
+    if (!email || !password || !name) {
+        return res.status(400).json({ error: "Name, email, and password are required." });
+    }
+    if (password.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters long." });
+    }
+    const users = getUsers();
+    const normalizedEmail = email.toLowerCase().trim();
+    if (users.some(u => u.email.toLowerCase().trim() === normalizedEmail)) {
+        return res.status(400).json({ error: "An account with this email already exists." });
+    }
+
+    // Generate unique ID, salt, and password hash
+    const salt = crypto.randomBytes(16).toString('hex');
+    const passwordHash = hashPassword(password, salt);
+    const userId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    const newUser = {
+        id: userId,
+        name: name.trim(),
+        email: normalizedEmail,
+        passwordHash,
+        salt,
+        joined: new Date().toISOString()
+    };
+
+    users.push(newUser);
+    saveUsers(users);
+
+    const token = generateToken(newUser.id);
+
+    // Return user info excluding password credentials
+    const { passwordHash: _, salt: __, ...userResponse } = newUser;
+    res.status(201).json({ user: userResponse, token });
+});
+
+// 2. Login Route
+app.post('/api/auth/login', (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required." });
+    }
+    const users = getUsers();
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = users.find(u => u.email.toLowerCase().trim() === normalizedEmail);
+    if (!user) {
+        return res.status(401).json({ error: "Invalid email or password." });
+    }
+
+    const incomingHash = hashPassword(password, user.salt);
+    if (incomingHash !== user.passwordHash) {
+        return res.status(401).json({ error: "Invalid email or password." });
+    }
+
+    const token = generateToken(user.id);
+
+    const { passwordHash: _, salt: __, ...userResponse } = user;
+    res.json({ user: userResponse, token });
+});
+
+// 3. Current User Route (token verification)
+app.get('/api/auth/me', (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: "No authorization token provided." });
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = verifyToken(token);
+    if (!userId) {
+        return res.status(401).json({ error: "Invalid or expired session token." });
+    }
+
+    const users = getUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+        return res.status(404).json({ error: "User profile not found." });
+    }
+
+    const { passwordHash: _, salt: __, ...userResponse } = user;
+    res.json(userResponse);
+});
 
 // 1. Get status
 app.get('/api/status', (req, res) => {

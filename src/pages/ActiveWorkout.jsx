@@ -1,7 +1,91 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, ChevronRight, ChevronLeft, Pause, Play, RotateCcw } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import { listExercises } from '../api';
+
+const SEED_PLANS = [
+    {
+        id: 'seed-push',
+        name: 'Push Day (Chest / Shoulders / Triceps)',
+        color: '#C97D60',
+        exerciseNames: [
+            'Barbell Bench Press',
+            'Incline Dumbbell Press',
+            'Dumbbell Fly',
+            'Chest Dip',
+            'Cable Crossover',
+            'Push-Up',
+            'Tricep Overhead Extension',
+            'Cable Tricep Pushdown',
+            'Skull Crusher'
+        ]
+    },
+    {
+        id: 'seed-pull',
+        name: 'Pull Day (Back / Biceps)',
+        color: '#60a5fa',
+        exerciseNames: [
+            'Barbell Row',
+            'Lat Pulldown',
+            'Pull-Up',
+            'Dumbbell Single-Arm Row',
+            'Seated Cable Row',
+            'Deadlift',
+            'Straight-Arm Cable Pulldown',
+            'Dumbbell Pullover',
+            'Dumbbell Bicep Curl',
+            'Hammer Curl',
+            'Barbell Bicep Curl',
+            'Preacher Curl'
+        ]
+    },
+    {
+        id: 'seed-legs',
+        name: 'Leg Day (Quads / Hamstrings / Core)',
+        color: '#4ade80',
+        exerciseNames: [
+            'Barbell Back Squat',
+            'Leg Press',
+            'Dumbbell Lunge',
+            'Romanian Deadlift',
+            'Lying Leg Curl',
+            'Bulgarian Split Squat',
+            'Hip Thrust',
+            'Standing Calf Raise',
+            'Abdominal Crunch',
+            'Hanging Leg Raise',
+            'Russian Twist',
+            'Plank',
+            'Bicycle Crunch'
+        ]
+    }
+];
+
+const initializePlans = (allExercises) => {
+    return SEED_PLANS.map(seed => {
+        const exercises = seed.exerciseNames.map(name => {
+            const found = allExercises.find(ex => ex.name.toLowerCase() === name.toLowerCase());
+            if (found) return found;
+            return {
+                id: name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+                name: name,
+                bodyPart: 'Various',
+                target: 'Various',
+                equipment: 'Bodyweight',
+                image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=800',
+                description: '<p>Perform 3 sets of 10-12 repetitions. Focus on slow eccentric contractions and full range of motion.</p>'
+            };
+        });
+        return {
+            id: seed.id,
+            name: seed.name,
+            color: seed.color,
+            exercises
+        };
+    });
+};
 
 export default function ActiveWorkout() {
     const { planId } = useParams();
@@ -14,18 +98,35 @@ export default function ActiveWorkout() {
     const timerRef = useRef(null);
 
     useEffect(() => {
-        const storedPlans = localStorage.getItem('fitness_plans');
-        if (storedPlans) {
-            const plans = JSON.parse(storedPlans);
-            const foundPlan = plans.find(p => p.id === planId);
+        const loadPlan = async () => {
+            let plans = [];
+            const storedPlans = localStorage.getItem('fitness_plans');
+            if (storedPlans) {
+                plans = JSON.parse(storedPlans);
+            }
+
+            let foundPlan = plans.find(p => p.id === planId);
+            
+            // If the plan doesn't exist, seed default plans
+            if (!foundPlan) {
+                try {
+                    const allExercises = await listExercises(150, 0);
+                    const seededPlans = initializePlans(allExercises);
+                    localStorage.setItem('fitness_plans', JSON.stringify(seededPlans));
+                    foundPlan = seededPlans.find(p => p.id === planId);
+                } catch (error) {
+                    console.error("Failed to seed default plans:", error);
+                }
+            }
+
             if (foundPlan && foundPlan.exercises && foundPlan.exercises.length > 0) {
                 setPlan(foundPlan);
             } else {
-                navigate('/planner'); // Redirect if invalid or empty
+                navigate('/planner');
             }
-        } else {
-            navigate('/planner');
-        }
+        };
+
+        loadPlan();
     }, [planId, navigate]);
 
     useEffect(() => {
