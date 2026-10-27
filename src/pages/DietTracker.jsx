@@ -141,30 +141,30 @@ export default function DietTracker() {
                     <div className="glass" style={{ padding: '2rem', width: '100%', maxWidth: '500px', cursor: 'default' }} onClick={(e) => e.stopPropagation()}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                             <h3>Log a Meal</h3>
-                            <button onClick={() => setShowAddModal(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
+                            <button onClick={() => setShowAddModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
                         </div>
                         
                         <form onSubmit={saveMeal} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>Meal Name</label>
-                                <input required type="text" value={newMeal.name} onChange={e => setNewMeal({...newMeal, name: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} placeholder="e.g. Chicken Breast & Rice" />
+                                <input required type="text" value={newMeal.name} onChange={e => setNewMeal({...newMeal, name: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)' }} placeholder="e.g. Chicken Breast & Rice" />
                             </div>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>Total Calories</label>
-                                <input required type="number" value={newMeal.calories} onChange={e => setNewMeal({...newMeal, calories: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} placeholder="kcal" />
+                                <input required type="number" value={newMeal.calories} onChange={e => setNewMeal({...newMeal, calories: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)' }} placeholder="kcal" />
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Protein (g)</label>
-                                    <input type="number" value={newMeal.protein} onChange={e => setNewMeal({...newMeal, protein: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                                    <input type="number" value={newMeal.protein} onChange={e => setNewMeal({...newMeal, protein: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Carbs (g)</label>
-                                    <input type="number" value={newMeal.carbs} onChange={e => setNewMeal({...newMeal, carbs: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                                    <input type="number" value={newMeal.carbs} onChange={e => setNewMeal({...newMeal, carbs: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Fats (g)</label>
-                                    <input type="number" value={newMeal.fat} onChange={e => setNewMeal({...newMeal, fat: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                                    <input type="number" value={newMeal.fat} onChange={e => setNewMeal({...newMeal, fat: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)' }} />
                                 </div>
                             </div>
                             <button type="submit" className="primary-button" style={{ marginTop: '1rem', width: '100%', padding: '15px' }}>Save Meal</button>

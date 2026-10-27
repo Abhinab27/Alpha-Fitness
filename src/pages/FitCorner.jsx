@@ -7,7 +7,7 @@ export default function FitCorner() {
     const [weight, setWeight] = useState(70); // in kg
 
     // Simple calculators that look like beginner-intermediate React code
-    const dailyProtein = weight * 2; // 2g per kg rule of thumb
+    const dailyProtein = weight * 1.5; // 1.5g per kg rule of thumb
     const dailyWater = Math.round((weight * 35) / 100) / 10; // 35ml per kg, formatted in Liters
     const dailyCalories = weight * 33; // 33 kcal per kg general estimate
 
@@ -17,7 +17,7 @@ export default function FitCorner() {
             {/* Header section */}
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '2.5rem', fontFamily: 'Lora, serif', fontWeight: '600', marginBottom: '0.75rem' }}>
-                    Wellness <span className="text-gradient">Fit Corner</span>
+                    Wellness <span style={{ color: 'var(--primary-color)' }}>Fit Corner</span>
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
                     Simple, practical fitness tips and calculators to help beginners and intermediates optimize nutrition, hydration, and mindset.

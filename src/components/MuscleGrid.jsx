@@ -13,7 +13,7 @@ export default function MuscleGrid({ selectedPart, onSelectPart }) {
     return (
         <section id="workouts" className="muscle-groups-section container">
             <div className="section-header">
-                <h2>Target <span className="text-gradient">Muscle Groups</span></h2>
+                <h2>Target <span style={{ color: 'var(--primary-color)' }}>Muscle Groups</span></h2>
                 <p>Select a body part to view corresponding tailored exercises and routines.</p>
             </div>
 

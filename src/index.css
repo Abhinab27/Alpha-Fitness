@@ -1,19 +1,55 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
+/* =========================================================================
+   Default: Dark Blue Fitness Theme
+   ========================================================================= */
 :root {
-  --bg-color: #FAF9F5;
-  --surface-color: #ffffff;
-  --surface-hover: #F4F2EB;
-  --primary-color: #C97D60; /* Elegant Warm Terracotta */
-  --primary-hover: #B46A4F;
-  --primary-glow: rgba(201, 125, 96, 0.08);
-  --secondary-color: #5E7B6C; /* Elegant Sage Green */
-  --text-main: #202124; /* Deep Slate Charcoal */
-  --text-muted: #6E7176;
-  --glass-bg: rgba(255, 255, 255, 0.95);
-  --glass-border: #E5E3DC;
+  --bg-color: #0F172A;
+  --surface-color: #1E293B;
+  --surface-hover: #334155;
+  --primary-color: #3B82F6;
+  --primary-hover: #2563EB;
+  --primary-glow: rgba(59, 130, 246, 0.2);
+  --secondary-color: #64748B;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --glass-bg: rgba(30, 41, 59, 0.95);
+  --glass-border: #334155;
+  --card-bg: #1E293B;
+  --input-bg: rgba(15, 23, 42, 0.6);
+  --tag-pink-bg: rgba(59, 130, 246, 0.15);
+  --tag-pink-color: #93C5FD;
+  --tag-pink-border: rgba(59, 130, 246, 0.3);
+  --tag-yellow-bg: rgba(100, 116, 139, 0.15);
+  --tag-yellow-color: #CBD5E1;
+  --tag-yellow-border: rgba(100, 116, 139, 0.3);
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
+}
+
+/* =========================================================================
+   Light Mode Override
+   ========================================================================= */
+[data-theme='light'] {
+  --bg-color: #F1F5F9;
+  --surface-color: #FFFFFF;
+  --surface-hover: #E2E8F0;
+  --primary-color: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-glow: rgba(37, 99, 235, 0.15);
+  --secondary-color: #475569;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: #CBD5E1;
+  --card-bg: #FFFFFF;
+  --input-bg: #F8FAFC;
+  --tag-pink-bg: rgba(37, 99, 235, 0.1);
+  --tag-pink-color: #2563EB;
+  --tag-pink-border: rgba(37, 99, 235, 0.2);
+  --tag-yellow-bg: rgba(71, 85, 105, 0.1);
+  --tag-yellow-color: #475569;
+  --tag-yellow-border: rgba(71, 85, 105, 0.2);
 }
 
 * {
@@ -31,9 +67,8 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Utilities */
@@ -41,14 +76,11 @@ body {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary-color);
 }
 
 .container {
@@ -71,7 +103,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #E5E3DC;
+  background: var(--surface-hover);
   border-radius: 4px;
 }
 
@@ -140,9 +172,14 @@ button {
   right: 0;
   padding: 1.2rem 0;
   z-index: 100;
-  background: rgba(250, 249, 245, 0.97);
+  background: rgba(15, 23, 42, 0.96);
   border-bottom: 1px solid var(--glass-border);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  transition: background 0.3s ease;
+}
+
+[data-theme='light'] .navbar {
+  background: rgba(241, 245, 249, 0.96);
 }
 
 .nav-content {
@@ -160,7 +197,7 @@ button {
 }
 
 .nav-links a {
-  color: var(--text-main);
+  color: var(--text-muted);
   text-decoration: none;
   margin-left: 2rem;
   font-weight: 600;
@@ -195,15 +232,17 @@ button {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, var(--bg-color) 40%, rgba(250, 249, 245, 0.8) 70%, transparent), linear-gradient(to top, var(--bg-color) 10%, transparent);
+  background: var(--bg-color);
+  opacity: 0.8;
 }
 
 .hero-content {
   max-width: 650px;
   padding: 3rem;
   animation: fadeUp 1s ease forwards;
-  background: #ffffff !important;
-  border: 1px solid #E5E3DC;
+  background: var(--surface-color) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
 }
 
 @keyframes fadeUp {
@@ -258,15 +297,15 @@ button {
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  border: 1px solid #E5E3DC;
-  background: #ffffff;
+  border: 1px solid var(--glass-border);
+  background: var(--card-bg);
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
 
 .muscle-card:hover,
 .muscle-card.active {
   transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(94, 123, 108, 0.08);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
 }
 
 .card-image {
@@ -288,8 +327,12 @@ button {
   left: 0;
   right: 0;
   padding: 2rem;
-  background: linear-gradient(to top, rgba(250, 249, 245, 0.95) 50%, rgba(250, 249, 245, 0));
+  background: rgba(15, 23, 42, 0.92);
   border-color: var(--card-color);
+}
+
+[data-theme='light'] .card-overlay {
+  background: rgba(241, 245, 249, 0.92);
 }
 
 .card-action {
@@ -324,10 +367,11 @@ button {
   align-items: flex-start;
   padding: 2rem;
   margin-bottom: 2rem;
-  background: #ffffff !important;
-  border: 1px solid #E5E3DC;
+  background: var(--surface-color) !important;
+  border: 1px solid var(--glass-border) !important;
   border-left: 4px solid var(--primary-color);
   border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .exercise-header p {
@@ -336,17 +380,18 @@ button {
 }
 
 .close-btn {
-  background: #F3F1EA;
+  background: var(--surface-hover);
   padding: 0.6rem 1.2rem;
   border-radius: 20px;
   color: var(--text-main);
   font-weight: 600;
   font-size: 0.85rem;
-  border: 1px solid #E5E3DC;
+  border: 1px solid var(--glass-border);
 }
 
 .close-btn:hover {
-  background: #E5E3DC;
+  background: var(--primary-color);
+  color: #ffffff;
   transform: translateY(-1px);
 }
 
@@ -369,21 +414,21 @@ button {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--glass-border);
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 16px;
   transition: 0.3s;
 }
 
 .exercise-card:hover {
-  border-color: #E5E3DC;
+  border-color: var(--primary-color);
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.12);
 }
 
 .exercise-image-wrapper {
   position: relative;
   height: 220px;
-  background: #fcfbf9;
+  background: var(--surface-hover);
   overflow: hidden;
 }
 
@@ -405,7 +450,7 @@ button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--card-bg);
 }
 
 /* Tutorial Style Exercise Card */
@@ -425,10 +470,11 @@ button {
   flex-direction: row;
   gap: 0.5rem;
   padding: 1.5rem 1.5rem 0 1.5rem;
+  background: var(--card-bg);
 }
 
 .tutorial-tag {
-  color: #202124;
+  color: var(--text-main);
   font-size: 13px;
   border-radius: 20px;
   text-transform: capitalize;
@@ -438,15 +484,15 @@ button {
 }
 
 .tag-pink {
-  background: #F4ECE7;
-  color: var(--primary-color);
-  border: 1px solid rgba(201, 125, 96, 0.2);
+  background: var(--tag-pink-bg);
+  color: var(--tag-pink-color);
+  border: 1px solid var(--tag-pink-border);
 }
 
 .tag-yellow {
-  background: #EBF0EC;
-  color: var(--secondary-color);
-  border: 1px solid rgba(94, 123, 108, 0.2);
+  background: var(--tag-yellow-bg);
+  color: var(--tag-yellow-color);
+  border: 1px solid var(--tag-yellow-border);
 }
 
 .tutorial-title {
@@ -477,8 +523,8 @@ button {
 }
 
 .secondary-button {
-  background: #ffffff;
-  border: 1px solid #E5E3DC;
+  background: var(--surface-hover);
+  border: 1px solid var(--glass-border);
   color: var(--text-main);
   display: inline-flex;
   align-items: center;
@@ -486,9 +532,9 @@ button {
 }
 
 .secondary-button:hover {
-  background: var(--surface-hover);
+  background: var(--primary-color);
   border-color: var(--primary-color);
-  color: var(--primary-color);
+  color: #ffffff;
   transform: translateY(-1px);
 }
 
@@ -499,7 +545,7 @@ button {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -511,11 +557,11 @@ button {
 .video-modal-content {
   width: 100%;
   max-width: 600px;
-  background: #ffffff;
+  background: var(--surface-color);
   padding: 1.5rem;
   position: relative;
   border-radius: 16px;
-  border: 1px solid #E5E3DC;
+  border: 1px solid var(--glass-border);
   animation: fadeUp 0.3s ease-out;
 }
 
@@ -529,8 +575,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
-  border: 1px solid #E5E3DC;
+  background: var(--surface-color);
+  border: 1px solid var(--glass-border);
   border-radius: 50%;
   color: var(--text-main);
   font-weight: bold;
@@ -539,7 +585,8 @@ button {
 }
 
 .modal-close:hover {
-  background: #FAF9F5;
+  background: var(--primary-color);
+  color: #ffffff;
   transform: scale(1.05);
 }
 
@@ -549,7 +596,11 @@ footer {
   border-top: 1px solid var(--glass-border);
   color: var(--text-muted);
   font-size: 0.85rem;
-  background: #FAF9F5;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+[data-theme='light'] footer {
+  background: var(--surface-color);
 }
 
 /* Search & Filters Hub Styles */
@@ -565,9 +616,9 @@ footer {
   gap: 1.5rem;
   padding: 2.5rem;
   border-radius: 20px;
-  background: #ffffff;
-  border: 1px solid #E5E3DC;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.01);
+  background: var(--surface-color);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .search-bar-form {
@@ -596,8 +647,8 @@ footer {
   font-family: inherit;
   font-size: 1rem;
   color: var(--text-main);
-  background: #FAF9F5;
-  border: 1px solid #E5E3DC;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 30px;
   outline: none;
   transition: all 0.3s ease;
@@ -606,7 +657,7 @@ footer {
 .search-input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 10px var(--primary-glow);
-  background: #ffffff;
+  background: var(--surface-color);
 }
 
 .search-button {
@@ -643,8 +694,8 @@ footer {
   font-family: inherit;
   font-size: 0.95rem;
   color: var(--text-main);
-  background: #FAF9F5;
-  border: 1px solid #E5E3DC;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 30px;
   outline: none;
   cursor: pointer;
@@ -654,9 +705,9 @@ footer {
 }
 
 .filter-select:focus {
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 10px rgba(94, 123, 108, 0.1);
-  background: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px var(--primary-glow);
+  background: var(--surface-color);
 }
 
 .filter-group::after {
@@ -672,12 +723,12 @@ footer {
   padding-top: 3rem !important;
 }
 
-/* Routine Planner Styling Overhauls */
+/* Routine Planner Styling */
 .planner-header-dashboard {
-  background: #ffffff !important;
-  border: 1px solid #E5E3DC;
+  background: var(--surface-color) !important;
+  border: 1px solid var(--glass-border);
   border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.01);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .stat-card {
@@ -686,8 +737,8 @@ footer {
   gap: 12px;
   padding: 10px 18px;
   border-radius: 12px;
-  background: #FAF9F5;
-  border: 1px solid #E5E3DC;
+  background: var(--input-bg);
+  border: 1px solid var(--glass-border);
   min-width: 140px;
 }
 
@@ -722,7 +773,7 @@ footer {
 
 .planner-tab-btn:hover {
   color: var(--primary-color);
-  background: #F4F2EB;
+  background: var(--surface-hover);
 }
 
 .planner-tab-btn.active {
@@ -733,167 +784,18 @@ footer {
 }
 
 .glass-sub {
-  background: #ffffff;
-  border: 1px solid #E5E3DC;
+  background: var(--surface-color);
+  border: 1px solid var(--glass-border);
   transition: all 0.2s ease;
 }
 
 .glass-sub:hover {
-  background: #FAF9F5;
-  border-color: #E5E3DC;
+  background: var(--surface-hover);
+  border-color: var(--glass-border);
 }
 
 .active-link {
   color: var(--primary-color) !important;
   border-bottom: 2px solid var(--primary-color);
   padding-bottom: 5px;
-}
-
-/* =========================================================================
-   Light and Dark Mode Variables & Transitions
-   ========================================================================= */
-
-/* Dark Mode Theme Variables */
-[data-theme='dark'] {
-  --bg-color: #0b0f19; /* Midnight Blue */
-  --surface-color: #111827; /* Dark Cobalt Card */
-  --surface-hover: #1f2937;
-  --primary-color: #C97D60; /* Keep terracotta clay */
-  --primary-hover: #B46A4F;
-  --primary-glow: rgba(201, 125, 96, 0.25);
-  --secondary-color: #60a5fa; /* Cobalt Blue */
-  --text-main: #ffffff;
-  --text-muted: #9ca3af;
-  --glass-bg: rgba(17, 24, 39, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.08);
-}
-
-/* Enable transitions for theme switching */
-body {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-[data-theme='dark'] body {
-  background: linear-gradient(135deg, #090d16 0%, #111827 50%, #1b263b 100%) !important;
-  background-attachment: fixed !important;
-}
-
-/* Specific Dark Mode overrides to ensure seamless visual design */
-[data-theme='dark'] .navbar {
-  background: rgba(11, 15, 25, 0.96) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-[data-theme='dark'] .hero-content,
-[data-theme='dark'] .weekly-card,
-[data-theme='dark'] .muscle-card,
-[data-theme='dark'] .exercise-card,
-[data-theme='dark'] .exercise-header,
-[data-theme='dark'] .search-filters-container,
-[data-theme='dark'] .glass,
-[data-theme='dark'] .glass-sub {
-  background: #111827 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-}
-
-[data-theme='dark'] .muscle-card:hover {
-  box-shadow: 0 8px 30px rgba(96, 165, 250, 0.15) !important;
-}
-
-[data-theme='dark'] .exercise-image-wrapper {
-  background: #1f2937 !important;
-}
-
-[data-theme='dark'] .exercise-content,
-[data-theme='dark'] .tutorial-tags-container {
-  background: #111827 !important;
-}
-
-[data-theme='dark'] .tag-pink {
-  background: rgba(201, 125, 96, 0.15) !important;
-  color: #fca5a5 !important;
-  border: 1px solid rgba(201, 125, 96, 0.3) !important;
-}
-
-[data-theme='dark'] .tag-yellow {
-  background: rgba(96, 165, 250, 0.15) !important;
-  color: #93c5fd !important;
-  border: 1px solid rgba(96, 165, 250, 0.3) !important;
-}
-
-[data-theme='dark'] .close-btn {
-  background: #1f2937 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-[data-theme='dark'] .close-btn:hover {
-  background: #374151 !important;
-}
-
-[data-theme='dark'] .search-input,
-[data-theme='dark'] .filter-select,
-[data-theme='dark'] .stat-card,
-[data-theme='dark'] select {
-  background: rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
-}
-
-[data-theme='dark'] .search-input:focus {
-  border-color: var(--primary-color) !important;
-  box-shadow: 0 0 10px var(--primary-glow) !important;
-}
-
-[data-theme='dark'] footer {
-  background: #090d16 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-[data-theme='dark'] .card-overlay {
-  background: linear-gradient(to top, rgba(17, 24, 39, 0.98) 50%, rgba(17, 24, 39, 0)) !important;
-}
-
-[data-theme='dark'] .video-modal-content {
-  background: #111827 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-[data-theme='dark'] .modal-close {
-  background: #1f2937 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-[data-theme='dark'] .modal-close:hover {
-  background: #374151 !important;
-}
-
-[data-theme='dark'] .planner-tab-btn:hover {
-  background: #1f2937 !important;
-}
-
-[data-theme='dark'] .glass-sub:hover {
-  background: #1f2937 !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-[data-theme='dark'] .weekly-card select {
-  background: #1f2937 !important;
-}
-
-[data-theme='dark'] .weekly-card div[style*="rgba(0,0,0,0.2)"] {
-  background: rgba(0, 0, 0, 0.35) !important;
-}
-
-/* Secondary Button Dark Mode Contrast fix */
-[data-theme='dark'] .secondary-button {
-  background: #1f2937 !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-[data-theme='dark'] .secondary-button:hover {
-  background: #374151 !important;
-  color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
 }

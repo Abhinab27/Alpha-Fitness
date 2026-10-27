@@ -173,7 +173,7 @@ export default function ActiveWorkout() {
             <div className="container" style={{ paddingTop: '100px', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="glass" style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '500px', width: '100%', borderRadius: '24px' }}>
                     <CheckCircle size={80} color="#4ade80" style={{ marginBottom: '1.5rem' }} />
-                    <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#fff' }}>Workout Complete!</h2>
+                    <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--text-main)' }}>Workout Complete!</h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginBottom: '2rem' }}>
                         Great job finishing your <strong style={{color: plan.color}}>{plan.name}</strong> routine.
                     </p>
@@ -192,7 +192,7 @@ export default function ActiveWorkout() {
             <div className="container" style={{ paddingTop: '100px', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="glass" style={{ textAlign: 'center', padding: '4rem 2rem', maxWidth: '500px', width: '100%', borderRadius: '24px', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', bottom: 0, left: 0, height: '4px', background: plan.color, transition: 'width 1s linear', width: `${(restTimeLeft / 60) * 100}%` }}></div>
-                    <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#fff' }}>Rest Period</h2>
+                    <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: 'var(--text-main)' }}>Rest Period</h2>
                     <div style={{ fontSize: '5rem', fontWeight: 'bold', fontFamily: 'monospace', color: plan.color, marginBottom: '2rem', textShadow: `0 0 20px ${plan.color}40` }}>
                         0:{restTimeLeft < 10 ? `0${restTimeLeft}` : restTimeLeft}
                     </div>
@@ -221,25 +221,25 @@ export default function ActiveWorkout() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
                 <div className="glass" style={{ padding: 0, overflow: 'hidden', borderRadius: '24px', display: 'flex', flexDirection: 'column' }}>
                     {/* Visual Media Area */}
-                    <div style={{ background: '#fff', display: 'flex', justifyContent: 'center', padding: '2rem' }}>
-                        <img src={currentExercise.image} alt={currentExercise.name} style={{ width: '100%', maxWidth: '400px', height: 'auto', mixBlendMode: 'multiply' }} />
+                    <div style={{ background: 'var(--surface-hover)', display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+                        <img src={currentExercise.image} alt={currentExercise.name} style={{ width: '100%', maxWidth: '400px', height: 'auto' }} />
                     </div>
                     
                     {/* Content Area */}
                     <div style={{ padding: '2rem', flexGrow: 1 }}>
                         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-                            <span className="exercise-tag" style={{ background: '#ff7eb3', color: '#000' }}>{currentExercise.bodyPart}</span>
-                            <span className="exercise-tag" style={{ background: '#fcc757', color: '#000' }}>{currentExercise.target}</span>
-                            <span className="exercise-tag" style={{ background: '#4ade80', color: '#000' }}>{currentExercise.equipment}</span>
+                            <span className="exercise-tag" style={{ background: 'rgba(255, 126, 179, 0.15)', color: '#ff7eb3', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600' }}>{currentExercise.bodyPart}</span>
+                            <span className="exercise-tag" style={{ background: 'rgba(252, 199, 87, 0.15)', color: '#fcc757', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600' }}>{currentExercise.target}</span>
+                            <span className="exercise-tag" style={{ background: 'rgba(74, 222, 128, 0.15)', color: '#4ade80', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600' }}>{currentExercise.equipment}</span>
                         </div>
                         
                         <h3 style={{ fontSize: '2.5rem', marginBottom: '1.5rem' }}>{currentExercise.name}</h3>
                         
-                        <div className="exercise-desc" style={{ marginBottom: '2rem', fontSize: '1.1rem', lineHeight: '1.6', color: 'rgba(255,255,255,0.8)' }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentExercise.description) }} />
+                        <div className="exercise-desc" style={{ marginBottom: '2rem', fontSize: '1.1rem', lineHeight: '1.6', color: 'var(--text-muted)' }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentExercise.description) }} />
                     </div>
 
                     {/* Controls Footer */}
-                    <div style={{ padding: '2rem', background: 'rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ padding: '2rem', background: 'var(--bg-color)', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <button 
                             className="secondary-button" 
                             onClick={handlePrevious} 

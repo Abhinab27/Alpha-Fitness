@@ -5,7 +5,7 @@ export default function Hero() {
         <header id="home" className="hero-section">
             <div className="hero-bg"></div>
             <div className="container hero-content glass">
-                <h1 className="hero-title">Forge Your <br /><span className="text-gradient">Ultimate Physique</span></h1>
+                <h1 className="hero-title">Forge Your <br /><span style={{ color: 'var(--primary-color)' }}>Ultimate Physique</span></h1>
                 <p className="hero-subtitle">
                     Explore targeted exercises, powerful routines, and expert instructions across all major muscle groups.
                     Elevate your training to the next level today.

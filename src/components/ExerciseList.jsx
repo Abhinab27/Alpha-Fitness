@@ -19,7 +19,7 @@ export default function ExerciseList({ selectedPart, exercises, loading, onClose
         <section id="exercise-section" className="exercises-section container">
             <div className="exercise-header glass">
                 <div>
-                    <h2><span className="text-gradient">{selectedPart}</span> Workout Plan</h2>
+                    <h2><span style={{ color: 'var(--primary-color)' }}>{selectedPart}</span> Workout Plan</h2>
                     <p>Specialized routine to maximize growth and strength.</p>
                 </div>
                 <button className="close-btn" onClick={onClose}>

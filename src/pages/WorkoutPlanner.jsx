@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, Dumbbell, ShieldCheck, Heart, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import '../index.css';
 
 // Map exercise names to their image filenames in /exercises/
@@ -54,7 +53,6 @@ const exerciseImageMap = {
 
 export default function WorkoutPlanner() {
     const navigate = useNavigate();
-    const { currentUser } = useAuth();
     const [expandedDay, setExpandedDay] = useState(null);
 
     const toggleDay = (idx) => {
@@ -165,44 +163,12 @@ export default function WorkoutPlanner() {
             {/* Elegant Header */}
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '2.5rem', fontWeight: '600', marginBottom: '0.75rem', fontFamily: 'Lora, serif' }}>
-                    Training <span className="text-gradient">Routine</span>
+                    Training <span style={{ color: 'var(--primary-color)' }}>Routine</span>
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto', fontFamily: 'Outfit, sans-serif' }}>
                     A structured Push / Pull / Legs split designed for maximum hypertrophy and strength progression.
                 </p>
             </div>
-
-            {currentUser && (
-                <div className="glass" style={{ 
-                    padding: '1.5rem 2rem', 
-                    borderRadius: '16px', 
-                    marginBottom: '2rem', 
-                    borderLeft: '4px solid var(--primary-color)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '15px',
-                    animation: 'fadeUp 0.5s ease forwards'
-                }}>
-                    <div>
-                        <h4 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>Welcome back, {currentUser.name}! 👋</h4>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
-                            Ready to crush your training session today? Let's stay consistent!
-                        </p>
-                    </div>
-                    <span style={{ 
-                        fontSize: '0.8rem', 
-                        background: 'rgba(94, 123, 108, 0.1)', 
-                        color: 'var(--secondary-color)', 
-                        padding: '6px 12px', 
-                        borderRadius: '30px', 
-                        fontWeight: 'bold' 
-                    }}>
-                        Joined: {new Date(currentUser.joined).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </span>
-                </div>
-            )}
 
             {/* Routine Cards */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -224,10 +190,9 @@ export default function WorkoutPlanner() {
                             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)'; }}
                             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)'; }}
                         >
-                            {/* Card Header with accent bar */}
                             <div style={{ 
                                 height: '4px', 
-                                background: `linear-gradient(90deg, ${item.color}, ${item.color}88)`,
+                                background: item.color,
                             }} />
 
                             <div style={{ padding: '2rem 2.5rem' }}>
